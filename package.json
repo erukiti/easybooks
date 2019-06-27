@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "postinstall": "npm i && tsc"
+    "postinstall": "tsc"
   },
   "bin": {
     "easybooks": "bin/easybooks"
