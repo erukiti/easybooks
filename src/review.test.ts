@@ -1,5 +1,5 @@
 import unified from 'unified'
-import reviewPlugin from './md2review'
+import reviewPlugin from './review'
 import { parseMarkdown } from './markdown'
 
 const review = unified().use(reviewPlugin)

@@ -9,8 +9,9 @@ import html from 'remark-html'
 import frontmatter from 'remark-frontmatter'
 import stringify from 'remark-stringify'
 
-import MDAST from 'mdast'
-import Unist from 'unist'
+import * as MDAST from 'mdast'
+
+export type MDASTNode = MDAST.Root | MDAST.Content
 
 const markdown = unified()
   .data('settings', { footnotes: true, gfm: true })
@@ -23,13 +24,12 @@ const markdown = unified()
   .use(stringify)
 
 export const parseMarkdown = (vfile: string) => {
-  return markdown.parse(vfile) as MDAST.Root
+  return markdown.parse(vfile) as MDASTNode
 }
 
-export const stringifyHtml = (node: Unist.Node, vfile?: string) =>
+export const stringifyHtml = (node: MDASTNode, vfile?: string) =>
   unified()
     .use(html)
     .stringify(node, vfile)
 
-export const stringifyMarkdown = (node: Unist.Node, vfile?: string) =>
-  markdown.stringify(node, vfile)
+export const stringifyMarkdown = (node: MDASTNode, vfile?: string) => markdown.stringify(node, vfile)

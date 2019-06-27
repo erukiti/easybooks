@@ -1,5 +1,5 @@
-import MDAST from 'mdast'
-import Unist from 'unist'
+import * as MDAST from 'mdast'
+import { MDASTNode } from './markdown'
 
 interface Context {
   list: number
@@ -52,9 +52,7 @@ const link = (tree: MDAST.Link, context: Context) => {
 }
 
 const list = (tree: MDAST.List, context: Context) => {
-  return tree.children
-    .map(child => compiler(child, { ...context, list: context.list + 1 }))
-    .join('')
+  return tree.children.map(child => compiler(child, { ...context, list: context.list + 1 })).join('')
 }
 
 const listItem = (tree: MDAST.ListItem, context: Context) => {
@@ -64,7 +62,7 @@ const listItem = (tree: MDAST.ListItem, context: Context) => {
     .trim()}\n`
 }
 
-const ignore = () => ''
+const ignore = (tree: any, context: Context) => ''
 
 const blockquote = (tree: MDAST.Blockquote, context: Context) => {
   return `//quote{\n${tree.children.map(child => compiler(child, context))}}\n`
@@ -74,10 +72,7 @@ const footnoteReference = (tree: MDAST.FootnoteReference, context: Context) => {
   return `@<fn>{${tree.identifier}}`
 }
 
-const footnoteDefinition = (
-  tree: MDAST.FootnoteDefinition,
-  context: Context,
-) => {
+const footnoteDefinition = (tree: MDAST.FootnoteDefinition, context: Context) => {
   return `//footnote[${tree.identifier}][${tree.children
     .map(child => compiler(child, context))
     .join('')
@@ -93,12 +88,20 @@ const strong = (tree: MDAST.Strong, context: Context) => {
 }
 
 const html = (tree: MDAST.HTML, context: Context) => {
-  return tree.value
+  if (tree.value.startsWith('<!--')) {
+    return tree.value
+      .replace(/^<!--/, '')
+      .replace(/-->$/, '')
+      .trim()
+      .split('\n')
+      .map(line => `#@# ${line}`)
+      .join('\n')
+  } else {
+    throw new Error(`supported HTML is comment only.\n${tree.value}`)
+  }
 }
 
-const compilers: {
-  [props: string]: (tree: any, context: Context) => string
-} = {
+const compilers = {
   root,
   paragraph,
   heading,
@@ -118,15 +121,18 @@ const compilers: {
   html,
 }
 
-export const compiler = (tree: Unist.Node, context: Context): string => {
-  if (!(tree.type in compilers)) {
+export const compiler = (tree: MDASTNode, context: Context): string => {
+  if (tree.type in compilers) {
+    const key = tree.type as keyof typeof compilers
+    return compilers[key](tree, context)
+  } else {
     console.log(tree)
-    throw new Error(`not implemented: ${tree.type}`)
+    throw new Error(`Not implemented: ${tree.type}`)
   }
-  return compilers[tree.type](tree, context)
 }
 
 export default function mdToReview() {
+  // @ts-ignore
   this.Compiler = (tree: MDAST.Root) => {
     return compiler(tree, { list: 0 })
   }
