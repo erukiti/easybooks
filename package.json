@@ -4,7 +4,8 @@
   "author": "SASAKI Shunsuke <erukiti@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "postinstall": "tsc"
   },
   "bin": {
     "easybooks": "bin/easybooks"
