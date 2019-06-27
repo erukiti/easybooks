@@ -1,0 +1,31 @@
+{
+  "name": "easybooks",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "js-yaml": "^3.13.1",
+    "mkdirp": "^0.5.1",
+    "remark": "^10.0.1",
+    "remark-breaks": "^1.0.2",
+    "remark-frontmatter": "^1.3.1",
+    "remark-highlight.js": "^5.1.0",
+    "remark-html": "^9.0.0",
+    "remark-html-katex": "^1.2.0",
+    "remark-math": "^1.0.6",
+    "remark-parse": "^6.0.3",
+    "unified": "^7.1.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.13",
+    "@types/js-yaml": "^3.12.1",
+    "@types/mdast": "^3.0.2",
+    "@types/node": "^12.0.4",
+    "@types/unist": "^2.0.3",
+    "jest": "^24.8.0",
+    "prettier": "^1.17.1",
+    "ts-jest": "^24.0.2",
+    "ts-node": "^8.2.0",
+    "typescript": "^3.5.1"
+  }
+}
