@@ -5,17 +5,37 @@ import { promisify } from 'util'
 
 import unified from 'unified'
 import yaml from 'js-yaml'
+import mkdirp from 'mkdirp'
 
 import mdastToReviewPlugin from './review'
 import { parseMarkdown } from './markdown'
 // import { parseActualCode } from './codeblock'
 
-const readFile = promisify(fs.readFile)
-const writeFile = promisify(fs.writeFile)
-
 const review = unified().use(mdastToReviewPlugin)
 
-export interface ConfigYml {
+const readFile = promisify(fs.readFile)
+const writeFile = promisify(fs.writeFile)
+const copyFile = promisify(fs.copyFile)
+const readDir = promisify(fs.readdir)
+const stat = promisify(fs.stat)
+
+const copyFileRecursive = async (srcDir: string, destDir: string) => {
+  const entries = await readDir(srcDir)
+  mkdirp.sync(destDir)
+  await Promise.all(
+    entries.map(async entry => {
+      const filename = path.join(srcDir, entry)
+      const st = await stat(filename)
+      if (st.isDirectory()) {
+        return copyFileRecursive(filename, path.join(destDir, entry))
+      } else {
+        return copyFile(filename, path.join(destDir, entry))
+      }
+    }),
+  )
+}
+
+export interface ConfigYaml {
   bookname: string
   booktitle: string
   language: string
@@ -37,57 +57,99 @@ export interface ConfigYml {
     texstyle: string
     texcommand: string
   }
+  [p: string]: any
 }
 
-export type ConfigJson = ConfigYml & {
-  catalog: { [props: string]: string[] }
+export interface Catalog {
+  [props: string]: string[]
 }
 
-const compile = async (src: string, dest: string) => {
+export type ConfigJson = ConfigYaml & {
+  catalog: Catalog
+  templates: string[]
+}
+
+const convert = async (src: string, dest: string) => {
   const markdownText = await readFile(src, { encoding: 'utf-8' })
   const root = parseMarkdown(markdownText)
   console.log('wrote:', dest)
+  mkdirp.sync(path.dirname(dest))
   await writeFile(dest, review.stringify(root), { encoding: 'utf-8' })
 }
 
-const writeCatalogYml = async (filename: string, catalog: any) => {
+const writeYaml = async (filename: string, data: any) => {
   console.log('wrote:', filename)
-  await writeFile(filename, yaml.dump(catalog))
+  mkdirp.sync(path.dirname(filename))
+  await writeFile(filename, yaml.dump(data))
 }
 
-export const buildBook = async (configFilename: string) => {
-  const catalog: any = {}
-  const files: string[] = []
-  const config: ConfigJson = JSON.parse(
-    await readFile(configFilename, { encoding: 'utf-8' }),
-  )
-  process.chdir(path.dirname(configFilename))
-  Object.keys(config.catalog).forEach(key => {
-    config.catalog[key].forEach(filename => {
-      if (!(key in catalog)) {
-        catalog[key] = []
+const readConfig = async (configFilename: string): Promise<ConfigJson> => {
+  return JSON.parse(await readFile(configFilename, { encoding: 'utf-8' }))
+}
+
+const toDesination = (filename: string) => path.join('.review', filename)
+
+const createCatalog = (catalog: Catalog) => {
+  const tasks: Promise<any>[] = []
+  Object.keys(catalog).map(key => {
+    catalog[key] = catalog[key].map(filename => {
+      if (filename.endsWith('.md')) {
+        const reviewFilename = filename.replace(/\.md$/, '.re')
+        tasks.push(convert(filename, toDesination(reviewFilename)))
+        return reviewFilename
+      } else {
+        tasks.push(copyFile(filename, toDesination(filename)))
+        return filename
       }
-      files.push(filename)
-      catalog[key].push(filename.replace(/\.md$/, '.re'))
     })
   })
+  return { catalog, tasks }
+}
+
+const copyTemplates = async (templates: string[]) => {
+  return Promise.all(
+    templates.map(dir => copyFileRecursive(dir, toDesination(dir))),
+  )
+}
+
+const makePdfByReview = () => {
+  return new Promise((resolve, reject) => {
+    console.log('Re:VIEW compile start')
+    childProcess
+      .spawn('review-pdfmaker', ['config.yml'], {
+        cwd: '.review',
+        stdio: 'inherit',
+      })
+      .on('close', code => {
+        if (code !== 0) {
+          reject(`error: ${code}`)
+        } else {
+          resolve()
+        }
+      })
+  })
+}
+
+export const buildBook = async (
+  configFilename: string,
+  projectDir = path.dirname(configFilename),
+) => {
+  const config: ConfigJson = await readConfig(configFilename)
+  process.chdir(projectDir)
+
+  const { catalog, tasks } = createCatalog(config.catalog)
+  delete config.catalog
+
+  const templates = config.templates
+  delete config.templates
+
   await Promise.all([
-    writeCatalogYml('.review/catalog.yml', catalog),
-    ...files.map(filename =>
-      compile(filename, `.review/${filename.replace(/\.md$/, '.re')}`),
-    ),
+    writeYaml('.review/catalog.yml', catalog),
+    writeYaml('.review/config.yml', config),
+    ...tasks,
+    copyTemplates(templates),
   ])
-  console.log('Re:VIEW compile start')
-  childProcess
-    .spawn('review-pdfmaker', ['config.yml'], {
-      cwd: '.review',
-      stdio: 'inherit',
-    })
-    .on('close', code => {
-      if (code !== 0) {
-        console.error('error:', code)
-      } else {
-        console.log('Re:VIEW compile done')
-      }
-    })
+
+  await makePdfByReview()
+  console.log('Re:VIEW compile done')
 }
