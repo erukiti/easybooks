@@ -32,4 +32,5 @@ export const stringifyHtml = (node: MDASTNode, vfile?: string) =>
     .use(html)
     .stringify(node, vfile)
 
-export const stringifyMarkdown = (node: MDASTNode, vfile?: string) => markdown.stringify(node, vfile)
+export const stringifyMarkdown = (node: MDASTNode, vfile?: string) =>
+  markdown.stringify(node, vfile)

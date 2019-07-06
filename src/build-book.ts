@@ -1,7 +1,6 @@
 import * as childProcess from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
-import { promisify } from 'util'
 
 import unified from 'unified'
 import yaml from 'js-yaml'
@@ -13,23 +12,17 @@ import { parseMarkdown } from './markdown'
 
 const review = unified().use(mdastToReviewPlugin)
 
-const readFile = promisify(fs.readFile)
-const writeFile = promisify(fs.writeFile)
-const copyFile = promisify(fs.copyFile)
-const readDir = promisify(fs.readdir)
-const stat = promisify(fs.stat)
-
 const copyFileRecursive = async (srcDir: string, destDir: string) => {
-  const entries = await readDir(srcDir)
+  const entries = await fs.promises.readdir(srcDir)
   mkdirp.sync(destDir)
   await Promise.all(
     entries.map(async entry => {
       const filename = path.join(srcDir, entry)
-      const st = await stat(filename)
+      const st = await fs.promises.stat(filename)
       if (st.isDirectory()) {
         return copyFileRecursive(filename, path.join(destDir, entry))
       } else {
-        return copyFile(filename, path.join(destDir, entry))
+        return fs.promises.copyFile(filename, path.join(destDir, entry))
       }
     }),
   )
@@ -70,21 +63,25 @@ export type ConfigJson = ConfigYaml & {
 }
 
 const convert = async (src: string, dest: string) => {
-  const markdownText = await readFile(src, { encoding: 'utf-8' })
+  const markdownText = await fs.promises.readFile(src, { encoding: 'utf-8' })
   const root = parseMarkdown(markdownText)
   console.log('wrote:', dest)
   mkdirp.sync(path.dirname(dest))
-  await writeFile(dest, review.stringify(root), { encoding: 'utf-8' })
+  await fs.promises.writeFile(dest, review.stringify(root), {
+    encoding: 'utf-8',
+  })
 }
 
 const writeYaml = async (filename: string, data: any) => {
   console.log('wrote:', filename)
   mkdirp.sync(path.dirname(filename))
-  await writeFile(filename, yaml.dump(data))
+  await fs.promises.writeFile(filename, yaml.dump(data))
 }
 
 const readConfig = async (configFilename: string): Promise<ConfigJson> => {
-  return JSON.parse(await readFile(configFilename, { encoding: 'utf-8' }))
+  return JSON.parse(
+    await fs.promises.readFile(configFilename, { encoding: 'utf-8' }),
+  )
 }
 
 const toDesination = (filename: string) => path.join('.review', filename)
@@ -98,7 +95,7 @@ const createCatalog = (catalog: Catalog) => {
         tasks.push(convert(filename, toDesination(reviewFilename)))
         return reviewFilename
       } else {
-        tasks.push(copyFile(filename, toDesination(filename)))
+        tasks.push(fs.promises.copyFile(filename, toDesination(filename)))
         return filename
       }
     })
