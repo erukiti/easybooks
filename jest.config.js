@@ -9,6 +9,6 @@ module.exports = {
     },
   },
   testMatch: ['**/*.test.(ts|tsx|js|jsx)'],
-  testPathIgnorePatterns: ['/node_modules/'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   preset: 'ts-jest',
 }

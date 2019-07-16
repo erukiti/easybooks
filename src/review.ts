@@ -1,5 +1,5 @@
 import * as MDAST from 'mdast'
-import { MDASTNode } from './markdown'
+import { MDASTNode, parseMeta } from './markdown'
 
 interface Context {
   list: number
@@ -22,7 +22,7 @@ const heading = (tree: MDAST.Heading, context: Context) => {
     .join('')
     .trim()
   const option = options.length === 0 ? '' : `[${options.join(',')}]`
-  return `${'='.repeat(tree.depth)}${option} ${s}`
+  return `${'='.repeat(tree.depth)}${option} ${s}\n`
 }
 
 const text = (tree: MDAST.Text) => {
@@ -43,7 +43,14 @@ const breakNode = () => {
 
 const code = (tree: MDAST.Code) => {
   const lang = tree.lang ? `[${tree.lang}]` : ''
-  return `//listnum[][]${lang}{\n${tree.value}\n//}`
+  if (tree.lang === 'sh') {
+    return `//cmd{\n${tree.value}\n//}\n`
+  }
+
+  const meta = parseMeta(tree.meta || '')
+
+  return `//listnum[${meta.id || meta.filename || ''}][${meta.caption ||
+    ''}]${lang}{\n${tree.value}\n//}\n`
 }
 
 const link = (tree: MDAST.Link, context: Context) => {
@@ -51,8 +58,20 @@ const link = (tree: MDAST.Link, context: Context) => {
   return `@<href>{${tree.url}${s ? `, ${s}` : ''}}`
 }
 
+const linkReference = (tree: MDAST.LinkReference, context: Context) => {
+  const [tag, id] = (tree.identifier as string).split(':')
+  if (tag !== '' && id !== '') {
+    return `@<${tag}>{${id}}`
+  }
+  throw new Error('linkRef: [tag:id] format is only supported.')
+}
+
 const list = (tree: MDAST.List, context: Context) => {
-  return tree.children.map(child => compiler(child, { ...context, list: context.list + 1 })).join('')
+  return (
+    tree.children
+      .map(child => compiler(child, { ...context, list: context.list + 1 }))
+      .join('') + '\n'
+  )
 }
 
 const listItem = (tree: MDAST.ListItem, context: Context) => {
@@ -72,7 +91,10 @@ const footnoteReference = (tree: MDAST.FootnoteReference, context: Context) => {
   return `@<fn>{${tree.identifier}}`
 }
 
-const footnoteDefinition = (tree: MDAST.FootnoteDefinition, context: Context) => {
+const footnoteDefinition = (
+  tree: MDAST.FootnoteDefinition,
+  context: Context,
+) => {
   return `//footnote[${tree.identifier}][${tree.children
     .map(child => compiler(child, context))
     .join('')
@@ -101,6 +123,11 @@ const html = (tree: MDAST.HTML, context: Context) => {
   }
 }
 
+const image = (tree: MDAST.Image, context: Context) => {
+  const url = tree.url.replace(/^images\//, '').replace(/\.[a-zA-Z0-9]$/, '')
+  return `//image[${url}][${tree.alt}]\n`
+}
+
 const compilers = {
   root,
   paragraph,
@@ -112,6 +139,7 @@ const compilers = {
   break: breakNode,
   code,
   link,
+  linkReference,
   list,
   listItem,
   footnoteReference,
@@ -119,6 +147,7 @@ const compilers = {
   emphasis,
   strong,
   html,
+  image,
 }
 
 export const compiler = (tree: MDASTNode, context: Context): string => {

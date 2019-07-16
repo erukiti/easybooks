@@ -7,12 +7,12 @@ const mdToReview = (src: string) => review.stringify(parseMarkdown(src))
 
 describe('heading', () => {
   test('standard heading', async () => {
-    expect(mdToReview(`# hoge`)).toBe(`= hoge`)
-    expect(mdToReview(`## fuga`)).toBe(`== fuga`)
+    expect(mdToReview(`# hoge`)).toBe(`= hoge\n`)
+    expect(mdToReview(`## fuga`)).toBe(`== fuga\n`)
   })
 
   test('with option', () => {
-    expect(mdToReview(`### [column] コラム`)).toBe(`===[column] コラム`)
+    expect(mdToReview(`### [column] コラム`)).toBe(`===[column] コラム\n`)
   })
 })
 
@@ -29,26 +29,41 @@ describe('paragraph', () => {
 
   test('link', () => {
     expect(mdToReview('[ほげ](http://example.com)')).toBe(
-      '\n@<href>{http://example.com, ほげ}\n'
+      '\n@<href>{http://example.com, ほげ}\n',
     )
   })
 })
 
 describe('code block', () => {
   test('no lang', () => {
-    expect(mdToReview('```\nほげ\n```\n')).toBe('//listnum[][]{\nほげ\n//}')
+    expect(mdToReview('```\nほげ\n```\n')).toBe('//listnum[][]{\nほげ\n//}\n')
   })
-  test('lang', () => {
+  test('lang js', () => {
     expect(mdToReview('```js\nconst a = 1\n```\n')).toBe(
-      '//listnum[][][js]{\nconst a = 1\n//}'
+      '//listnum[][][js]{\nconst a = 1\n//}\n',
+    )
+  })
+  test('lang sh', () => {
+    expect(mdToReview('```sh\n$ hoge\n```\n')).toBe('//cmd{\n$ hoge\n//}\n')
+  })
+
+  test('caption', () => {
+    expect(mdToReview('```js {caption="ほげ"}\nconst a = 1\n```\n')).toBe(
+      '//listnum[][ほげ][js]{\nconst a = 1\n//}\n',
+    )
+  })
+
+  test('caption', () => {
+    expect(mdToReview('```js {id=hoge caption=ほげ}\nconst a = 1\n```\n')).toBe(
+      '//listnum[hoge][ほげ][js]{\nconst a = 1\n//}\n',
     )
   })
 })
 
 describe('list', () => {
   test('', () => {
-    expect(mdToReview('* hoge\n* fuga')).toBe(' * hoge\n * fuga\n')
-    expect(mdToReview('* hoge\n  - fuga')).toBe(' * hoge\n ** fuga\n')
+    expect(mdToReview('* hoge\n* fuga')).toBe(' * hoge\n * fuga\n\n')
+    expect(mdToReview('* hoge\n  - fuga')).toBe(' * hoge\n ** fuga\n\n')
   })
 })
 
@@ -64,6 +79,12 @@ describe('blockquote', () => {
   })
 })
 
+describe('link reference [list:ID] format', () => {
+  test('@<img>{image}', () => {
+    expect(mdToReview('hoge[img:image]fuga')).toBe(`\nhoge@<img>{image}fuga\n`)
+  })
+})
+
 describe('footnote reference', () => {
   test('', () => {
     expect(mdToReview('fuga[^hoge]piyo')).toBe('\nfuga@<fn>{hoge}piyo\n')
@@ -73,7 +94,7 @@ describe('footnote reference', () => {
 describe('footnote definition', () => {
   test('', () => {
     expect(mdToReview('[^hoge]: hoge とは「ほげ」である。\n')).toBe(
-      '//footnote[hoge][hoge とは「ほげ」である。]\n'
+      '//footnote[hoge][hoge とは「ほげ」である。]\n',
     )
   })
 })
