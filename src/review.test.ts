@@ -110,3 +110,11 @@ describe('strong', () => {
     expect(mdToReview('hoge**fuga**piyo')).toBe('\nhoge@<strong>{fuga}piyo\n')
   })
 })
+
+describe('table', () => {
+  test('', () => {
+    expect(mdToReview(`|title1|title2|\n|-----|-----|\n|hoge|fuga|\n`)).toBe(
+      '//table[][]{\ntitle1\ttitle2\n--------------------------\nhoge\tfuga\n//}\n',
+    )
+  })
+})

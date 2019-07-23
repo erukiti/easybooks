@@ -95,7 +95,11 @@ const createCatalog = (catalog: Catalog) => {
         tasks.push(convert(filename, toDesination(reviewFilename)))
         return reviewFilename
       } else {
-        tasks.push(fs.promises.copyFile(filename, toDesination(filename)))
+        const copy = async () => {
+          console.log('copyed:', toDesination(filename))
+          await fs.promises.copyFile(filename, toDesination(filename))
+        }
+        tasks.push(copy())
         return filename
       }
     })

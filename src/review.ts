@@ -34,7 +34,7 @@ const paragraph = (tree: MDAST.Paragraph, context: Context) => {
 }
 
 const inlineCode = (tree: MDAST.InlineCode) => {
-  return `@<code>{${tree.value}}`
+  return `@<code>{${tree.value.replace('}', '\\}')}}`
 }
 
 const breakNode = () => {
@@ -49,8 +49,10 @@ const code = (tree: MDAST.Code) => {
 
   const meta = parseMeta(tree.meta || '')
 
-  return `//listnum[${meta.id || meta.filename || ''}][${meta.caption ||
-    ''}]${lang}{\n${tree.value}\n//}\n`
+  return `//listnum[${(meta.id || meta.filename || '').replace(
+    '}',
+    '\\}',
+  )}][${meta.caption || ''}]${lang}{\n${tree.value}\n//}\n`
 }
 
 const link = (tree: MDAST.Link, context: Context) => {
@@ -61,7 +63,7 @@ const link = (tree: MDAST.Link, context: Context) => {
 const linkReference = (tree: MDAST.LinkReference, context: Context) => {
   const [tag, id] = (tree.identifier as string).split(':')
   if (tag !== '' && id !== '') {
-    return `@<${tag}>{${id}}`
+    return `@<${tag}>{${id.replace('}', '\\}')}}`
   }
   throw new Error('linkRef: [tag:id] format is only supported.')
 }
@@ -128,6 +130,22 @@ const image = (tree: MDAST.Image, context: Context) => {
   return `//image[${url}][${tree.alt}]\n`
 }
 
+const table = (tree: MDAST.Table, context: Context) => {
+  const [header, ...rows] = tree.children.map(child => compiler(child, context))
+
+  return `//table[][]{\n${header}\n--------------------------\n${rows.join(
+    '\n',
+  )}\n//}\n`
+}
+
+const tableRow = (tree: MDAST.TableRow, context: Context) => {
+  return tree.children.map(child => compiler(child, context)).join('\t')
+}
+
+const tableCell = (tree: MDAST.TableCell, context: Context) => {
+  return tree.children.map(child => compiler(child, context)).join('')
+}
+
 const compilers = {
   root,
   paragraph,
@@ -148,6 +166,9 @@ const compilers = {
   strong,
   html,
   image,
+  table,
+  tableRow,
+  tableCell,
 }
 
 export const compiler = (tree: MDASTNode, context: Context): string => {
