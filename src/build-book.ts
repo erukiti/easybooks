@@ -10,6 +10,11 @@ import mdastToReviewPlugin from './review'
 import { parseMarkdown } from './markdown'
 // import { parseActualCode } from './codeblock'
 
+import vFile from 'vfile'
+// const opt: vFile.VFileOptions = { basename: 'hoge' }
+// const vf = vFile(opt)
+// console.log(vf)
+
 const review = unified().use(mdastToReviewPlugin)
 
 const copyFileRecursive = async (srcDir: string, destDir: string) => {
@@ -67,9 +72,16 @@ const convert = async (src: string, dest: string) => {
   const root = parseMarkdown(markdownText)
   console.log('wrote:', dest)
   mkdirp.sync(path.dirname(dest))
-  await fs.promises.writeFile(dest, review.stringify(root), {
-    encoding: 'utf-8',
-  })
+  await fs.promises.writeFile(
+    dest,
+    review.stringify(
+      root,
+      vFile({ data: path.basename(dest).replace(/\.[a-zA-Z0-9]+$/, '') }),
+    ),
+    {
+      encoding: 'utf-8',
+    },
+  )
 }
 
 const writeYaml = async (filename: string, data: any) => {

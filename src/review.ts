@@ -3,6 +3,13 @@ import { MDASTNode, parseMeta } from './markdown'
 
 interface Context {
   list: number
+  id: number
+  chapter: string
+}
+
+const getId = (context: Context) => {
+  const id = context.id++
+  return `${context.chapter}-${context.id.toString().padStart(3, '0')}`
 }
 
 const root = (tree: MDAST.Root, context: Context) => {
@@ -41,7 +48,7 @@ const breakNode = () => {
   return `\n`
 }
 
-const code = (tree: MDAST.Code) => {
+const code = (tree: MDAST.Code, context: Context) => {
   const lang = tree.lang ? `[${tree.lang}]` : ''
   if (tree.lang === 'sh') {
     return `//cmd{\n${tree.value}\n//}\n`
@@ -49,7 +56,7 @@ const code = (tree: MDAST.Code) => {
 
   const meta = parseMeta(tree.meta || '')
 
-  return `//listnum[${(meta.id || meta.filename || '').replace(
+  return `//listnum[${(meta.id || getId(context)).replace(
     '}',
     '\\}',
   )}][${meta.caption || ''}]${lang}{\n${tree.value}\n//}\n`
@@ -133,9 +140,10 @@ const image = (tree: MDAST.Image, context: Context) => {
 const table = (tree: MDAST.Table, context: Context) => {
   const [header, ...rows] = tree.children.map(child => compiler(child, context))
 
-  return `//table[][]{\n${header}\n--------------------------\n${rows.join(
-    '\n',
-  )}\n//}\n`
+  // FIXME: caption!!!!
+  return `//table[${getId(
+    context,
+  )}][]{\n${header}\n--------------------------\n${rows.join('\n')}\n//}\n`
 }
 
 const tableRow = (tree: MDAST.TableRow, context: Context) => {
@@ -183,7 +191,11 @@ export const compiler = (tree: MDASTNode, context: Context): string => {
 
 export default function mdToReview() {
   // @ts-ignore
-  this.Compiler = (tree: MDAST.Root) => {
-    return compiler(tree, { list: 0 })
+  this.Compiler = (tree: MDAST.Root, vfile: any) => {
+    return compiler(tree, {
+      list: 0,
+      id: 0,
+      chapter: vfile.data,
+    })
   }
 }
