@@ -8,12 +8,9 @@ import mkdirp from 'mkdirp'
 
 import mdastToReviewPlugin from './review'
 import { parseMarkdown } from './markdown'
-// import { parseActualCode } from './codeblock'
+import { fetchTemplates } from './fetch-templates'
 
 import vFile from 'vfile'
-// const opt: vFile.VFileOptions = { basename: 'hoge' }
-// const vf = vFile(opt)
-// console.log(vf)
 
 const review = unified().use(mdastToReviewPlugin)
 
@@ -65,6 +62,10 @@ export interface Catalog {
 export type ConfigJson = ConfigYaml & {
   catalog: Catalog
   templates: string[]
+  sty_templates?: {
+    url: string
+    dir: string
+  }
 }
 
 const convert = async (src: string, dest: string) => {
@@ -116,13 +117,12 @@ const createCatalog = (catalog: Catalog) => {
       }
     })
   })
+
   return { catalog, tasks }
 }
 
 const copyTemplates = async (templates: string[]) => {
-  return Promise.all(
-    templates.map(dir => copyFileRecursive(dir, toDesination(dir))),
-  )
+  await templates.map(dir => copyFileRecursive(dir, toDesination(dir)))
 }
 
 const makePdfByReview = () => {
@@ -143,18 +143,41 @@ const makePdfByReview = () => {
   })
 }
 
+const extractTemplates = async (url: string, dir: string, dest: string) => {
+  mkdirp.sync(dest)
+  console.log('fetch TeX sty templates from:', url)
+  const files = await fetchTemplates(url, dir)
+  console.log('fetch done')
+  return Promise.all(
+    files.map(async file => {
+      console.log(file.name)
+      await fs.promises.writeFile(path.join(dest, file.name), file.text)
+      console.log('TeX sty extracted:', path.join(dest, file.name))
+    }),
+  )
+}
+
 export const buildBook = async (
   configFilename: string,
   projectDir = path.dirname(configFilename),
 ) => {
   const config: ConfigJson = await readConfig(configFilename)
+
   process.chdir(projectDir)
+  mkdirp.sync('.review')
 
   const { catalog, tasks } = createCatalog(config.catalog)
   delete config.catalog
 
   const templates = config.templates
   delete config.templates
+
+  if (config.sty_templates) {
+    const { url, dir } = config.sty_templates
+    console.log(url, dir)
+    await extractTemplates(url, dir, '.review/sty')
+    // 上書きの都合上、ここで先に実行しておく
+  }
 
   await Promise.all([
     writeYaml('.review/catalog.yml', catalog),
