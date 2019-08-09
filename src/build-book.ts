@@ -1,6 +1,14 @@
 import * as childProcess from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
+import { promisify } from 'util'
+
+
+const readFile = promisify(fs.readFile)
+const stat = promisify(fs.stat)
+const writeFile = promisify(fs.writeFile)
+const copyFile = promisify(fs.copyFile)
+const readDir = promisify(fs.readdir)
 
 import unified from 'unified'
 import yaml from 'js-yaml'
@@ -15,16 +23,16 @@ import vFile from 'vfile'
 const review = unified().use(mdastToReviewPlugin)
 
 const copyFileRecursive = async (srcDir: string, destDir: string) => {
-  const entries = await fs.promises.readdir(srcDir)
+  const entries = await readDir(srcDir)
   mkdirp.sync(destDir)
   await Promise.all(
     entries.map(async entry => {
       const filename = path.join(srcDir, entry)
-      const st = await fs.promises.stat(filename)
+      const st = await stat(filename)
       if (st.isDirectory()) {
         return copyFileRecursive(filename, path.join(destDir, entry))
       } else {
-        return fs.promises.copyFile(filename, path.join(destDir, entry))
+        return copyFile(filename, path.join(destDir, entry))
       }
     }),
   )
@@ -69,11 +77,11 @@ export type ConfigJson = ConfigYaml & {
 }
 
 const convert = async (src: string, dest: string) => {
-  const markdownText = await fs.promises.readFile(src, { encoding: 'utf-8' })
+  const markdownText = await readFile(src, { encoding: 'utf-8' })
   const root = parseMarkdown(markdownText)
   console.log('wrote:', dest)
   mkdirp.sync(path.dirname(dest))
-  await fs.promises.writeFile(
+  await writeFile(
     dest,
     review.stringify(
       root,
@@ -88,12 +96,12 @@ const convert = async (src: string, dest: string) => {
 const writeYaml = async (filename: string, data: any) => {
   console.log('wrote:', filename)
   mkdirp.sync(path.dirname(filename))
-  await fs.promises.writeFile(filename, yaml.dump(data))
+  await writeFile(filename, yaml.dump(data))
 }
 
 const readConfig = async (configFilename: string): Promise<ConfigJson> => {
   return JSON.parse(
-    await fs.promises.readFile(configFilename, { encoding: 'utf-8' }),
+    await readFile(configFilename, { encoding: 'utf-8' }),
   )
 }
 
@@ -110,7 +118,7 @@ const createCatalog = (catalog: Catalog) => {
       } else {
         const copy = async () => {
           console.log('copyed:', toDesination(filename))
-          await fs.promises.copyFile(filename, toDesination(filename))
+          await copyFile(filename, toDesination(filename))
         }
         tasks.push(copy())
         return filename
@@ -151,7 +159,7 @@ const extractTemplates = async (url: string, dir: string, dest: string) => {
   return Promise.all(
     files.map(async file => {
       console.log(file.name)
-      await fs.promises.writeFile(path.join(dest, file.name), file.text)
+      await writeFile(path.join(dest, file.name), file.text)
       console.log('TeX sty extracted:', path.join(dest, file.name))
     }),
   )

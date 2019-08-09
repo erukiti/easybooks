@@ -1,6 +1,6 @@
 {
   "name": "easybooks",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "author": "SASAKI Shunsuke <erukiti@gmail.com>",
   "license": "MIT",
   "scripts": {
@@ -23,19 +23,19 @@
     "remark-html": "10.0.0",
     "remark-html-katex": "1.2.0",
     "remark-math": "1.0.6",
-    "remark-parse": "7.0.0",
-    "remark-stringify": "7.0.1",
+    "remark-parse": "7.0.1",
+    "remark-stringify": "7.0.2",
     "unified": "8.3.2"
   },
   "devDependencies": {
-    "@types/jest": "24.0.16",
+    "@types/jest": "24.0.17",
     "@types/js-yaml": "3.12.1",
     "@types/jszip": "^3.1.6",
     "@types/mdast": "^3.0.2",
     "@types/mkdirp": "^0.5.2",
-    "@types/node": "^12.6.8",
+    "@types/node": "^12.7.1",
     "@types/node-fetch": "^2.5.0",
-    "@types/react": "16.8.23",
+    "@types/react": "16.9.0",
     "@types/unist": "2.0.3",
     "jest": "24.8.0",
     "ts-jest": "24.0.2",
