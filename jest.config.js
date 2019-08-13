@@ -1,14 +1,14 @@
 module.exports = {
-  moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json'],
+  moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx'],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx)$': 'babel-jest',
   },
   globals: {
-    'ts-jest': {
-      tsConfig: 'tsconfig.json',
+    'babel-jest': {
+      presets: ['typescript'],
     },
   },
-  testMatch: ['**/*.test.(ts|tsx|js|jsx)'],
-  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
-  preset: 'ts-jest',
+  testMatch: ['**/src/**/*.test.(ts|tsx|js|jsx)'],
+  testPathIgnorePatterns: ['/node_modules/'],
+  // setupFiles: ['jest-localstorage-mock', 'jest-date-mock']
 }

@@ -1,0 +1,28 @@
+{
+  "bookname": "writing-with-easybooks",
+  "booktitle": "easybooksで技術書を書こう",
+  "aut": ["erukiti"],
+  "language": "ja",
+  "toc": true,
+  "rights": "copyrights 2019 SASAKI Shunsuke",
+  "colophon": false,
+  "history": [["発行日"]],
+  "prt": "キンコーズ製本の予定",
+  "pbl": "東京ラビットハウス",
+  "secnolevel": 3,
+  "titlepage": false,
+  "review_version": 3.0,
+  "texstyle": ["reviewmacro"],
+  "texdocumentclass": [
+    "review-jsbook",
+    "media=ebook,paper=a5,serial_pagination=true,hiddenfolio=nikko-pc,openany,fontsize=10pt,baselineskip=15pt,line_length=40zw,number_of_lines=33,head_space=14mm,headsep=3mm,headheight=5mm,footskip=10mm"
+  ],
+  "sty_templates": {
+    "url": "https://github.com/TechBooster/ReVIEW-Template/archive/2cde584d33e8a6f5e6cf647e62fb6b3123ce4dfa.zip",
+    "dir": "ReVIEW-Template-2cde584d33e8a6f5e6cf647e62fb6b3123ce4dfa/articles/sty/"
+  },
+  "templates": ["images"],
+  "catalog": {
+    "CHAPS": ["about-easybooks.md"]
+  }
+}
