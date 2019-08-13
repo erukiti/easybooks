@@ -9,7 +9,7 @@ interface Context {
 
 const getId = (context: Context) => {
   const id = context.id++
-  return `${context.chapter}-${context.id.toString().padStart(3, '0')}`
+  return `${context.chapter}-${id.toString().padStart(3, '0')}`
 }
 
 const root = (tree: MDAST.Root, context: Context) => {
@@ -137,13 +137,34 @@ const image = (tree: MDAST.Image, context: Context) => {
   return `//image[${url}][${tree.alt}]\n`
 }
 
+const TableAlign = {
+  left: 'l',
+  center: 'c',
+  right: 'r',
+}
+
 const table = (tree: MDAST.Table, context: Context) => {
   const [header, ...rows] = tree.children.map(child => compiler(child, context))
 
+  const lines: string[] = []
+
+  if (tree.align) {
+    lines.push(
+      `//tsize[|latex||${tree.align
+        .map(align => TableAlign[align || 'left'])
+        .join('|')}|]`,
+    )
+  }
+
   // FIXME: caption!!!!
-  return `//table[${getId(
-    context,
-  )}][]{\n${header}\n--------------------------\n${rows.join('\n')}\n//}\n`
+  lines.push(`//table[${getId(context)}][]{`)
+  lines.push(header)
+  lines.push('--------------------------')
+  lines.push(...rows)
+  lines.push('//}')
+  lines.push('')
+
+  return lines.join('\n')
 }
 
 const tableRow = (tree: MDAST.TableRow, context: Context) => {
@@ -195,7 +216,7 @@ export default function mdToReview() {
     return compiler(tree, {
       list: 0,
       id: 0,
-      chapter: vfile.data,
+      chapter: typeof vfile.data === 'string' ? vfile.data : '',
     })
   }
 }

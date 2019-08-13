@@ -91,12 +91,25 @@ FIXME: がんばって書く
 |hoge|ほげ|
 |fuga|ふが|
 
-```md
+```md {caption="GFM table"}
 |ひょう|ひょー|
 |------|------|
 |hoge|ほげ|
 |fuga|ふが|
 ```
+
+| Left-aligned | Center-aligned | Right-aligned |
+| :---         |     :---:      |          ---: |
+| git status   | git status     | git status    |
+| git diff     | git diff       | git diff      |
+
+```md caption={"left/center/right align"}
+| Left-aligned | Center-aligned | Right-aligned |
+| :---         |     :---:      |          ---: |
+| git status   | git status     | git status    |
+| git diff     | git diff       | git diff      |
+
+
 
 ### コード
 

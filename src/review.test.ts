@@ -36,11 +36,13 @@ describe('paragraph', () => {
 
 describe('code block', () => {
   test('no lang', () => {
-    expect(mdToReview('```\nほげ\n```\n')).toBe('//listnum[][]{\nほげ\n//}\n')
+    expect(mdToReview('```\nほげ\n```\n')).toBe(
+      '//listnum[-000][]{\nほげ\n//}\n',
+    )
   })
   test('lang js', () => {
     expect(mdToReview('```js\nconst a = 1\n```\n')).toBe(
-      '//listnum[][][js]{\nconst a = 1\n//}\n',
+      '//listnum[-000][][js]{\nconst a = 1\n//}\n',
     )
   })
   test('lang sh', () => {
@@ -49,11 +51,11 @@ describe('code block', () => {
 
   test('caption', () => {
     expect(mdToReview('```js {caption="ほげ"}\nconst a = 1\n```\n')).toBe(
-      '//listnum[][ほげ][js]{\nconst a = 1\n//}\n',
+      '//listnum[-000][ほげ][js]{\nconst a = 1\n//}\n',
     )
   })
 
-  test('caption', () => {
+  test('caption & id', () => {
     expect(mdToReview('```js {id=hoge caption=ほげ}\nconst a = 1\n```\n')).toBe(
       '//listnum[hoge][ほげ][js]{\nconst a = 1\n//}\n',
     )
@@ -112,9 +114,49 @@ describe('strong', () => {
 })
 
 describe('table', () => {
-  test('', () => {
-    expect(mdToReview(`|title1|title2|\n|-----|-----|\n|hoge|fuga|\n`)).toBe(
-      '//table[][]{\ntitle1\ttitle2\n--------------------------\nhoge\tfuga\n//}\n',
+  test('GFM table', () => {
+    expect(
+      mdToReview(
+        [
+          '|title1|title2|title3|',
+          '|-----|-----|----|',
+          '|hoge|fuga|piyo|',
+          '',
+        ].join('\n'),
+      ),
+    ).toBe(
+      [
+        '//tsize[|latex||l|l|l|]',
+        '//table[-000][]{',
+        'title1\ttitle2\ttitle3',
+        '--------------------------',
+        'hoge\tfuga\tpiyo',
+        '//}',
+        '',
+      ].join('\n'),
+    )
+  })
+
+  test('GFM table left/center/right align', () => {
+    expect(
+      mdToReview(
+        [
+          '|left|center|right|',
+          '|:-----|:-----:|---:|',
+          '|hoge|fuga|piyo|',
+          '',
+        ].join('\n'),
+      ),
+    ).toBe(
+      [
+        '//tsize[|latex||l|c|r|]',
+        '//table[-000][]{',
+        'left\tcenter\tright',
+        '--------------------------',
+        'hoge\tfuga\tpiyo',
+        '//}',
+        '',
+      ].join('\n'),
     )
   })
 })
