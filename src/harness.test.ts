@@ -64,10 +64,6 @@ describe('buildBook test harness', () => {
   - なまえ
 texstyle:
   - reviewmacro
-sty_templates:
-  url: >-
-    https://github.com/TechBooster/ReVIEW-Template/archive/2cde584d33e8a6f5e6cf647e62fb6b3123ce4dfa.zip
-  dir: ReVIEW-Template-2cde584d33e8a6f5e6cf647e62fb6b3123ce4dfa/articles/sty/
 review_version: 3
 `)
     const st = await stat(path.join(reviewDir, 'example.pdf'))

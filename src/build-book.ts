@@ -68,7 +68,7 @@ export interface Catalog {
 
 export type ConfigJson = ConfigYaml & {
   catalog: Catalog
-  templates: string[]
+  templates?: string[]
   sty_templates?: {
     url: string
     dir: string
@@ -165,28 +165,39 @@ const extractTemplates = async (url: string, dir: string, dest: string) => {
   )
 }
 
-export const buildBook = async (
-  configFilename: string,
-  projectDir = path.dirname(configFilename),
-) => {
-  const config: ConfigJson = await readConfig(configFilename)
+export const preparingConfig = (config: any) => {
+  const catalog = { ...config.catalog }
+  const templates = [...(config.templates || [])]
+  const sty_templates = { ...config.sty_templates }
+  delete config.catalog
+  delete config.templates
+  delete config.sty_templates
 
+  return { catalog, templates, sty_templates }
+}
+
+export const buildBookWithPrepared = async (
+  config: any,
+  catalog: any,
+  templates: string[],
+  sty_templates: any,
+  projectDir: string,
+) => {
   process.chdir(projectDir)
   mkdirp.sync('.review')
 
-  const { catalog, tasks } = createCatalog(config.catalog)
-  delete config.catalog
+  const { tasks } = createCatalog(catalog)
 
-  const templates = config.templates || []
-  delete config.templates
-
-  if (config.sty_templates) {
-    const { url, dir } = config.sty_templates
+  // 1. まず Re:VIEW sty ファイルを展開しておく
+  // 上書きの都合上、先にやる必要がある
+  if ('url' in sty_templates) {
+    const { url, dir } = sty_templates
     console.log(url, dir)
     await extractTemplates(url, dir, '.review/sty')
     // 上書きの都合上、ここで先に実行しておく
   }
 
+  // 大半の書き出しタスクは平行で行える
   await Promise.all([
     writeYaml('.review/catalog.yml', catalog),
     writeYaml('.review/config.yml', config),
@@ -194,6 +205,22 @@ export const buildBook = async (
     copyTemplates(templates),
   ])
 
+  // .review ディレクトリが全てそろったのでコンパイルする
   await makePdfByReview()
   console.log('Re:VIEW compile done')
+}
+export const buildBook = async (
+  configFilename: string,
+  projectDir = path.dirname(configFilename),
+) => {
+  const config: ConfigJson = await readConfig(configFilename)
+
+  const { catalog, templates, sty_templates } = preparingConfig(config)
+  await buildBookWithPrepared(
+    config,
+    catalog,
+    templates,
+    sty_templates,
+    projectDir,
+  )
 }
