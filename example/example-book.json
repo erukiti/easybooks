@@ -23,6 +23,6 @@
   },
   "templates": ["images"],
   "catalog": {
-    "CHAPS": ["about-easybooks.md"]
+    "CHAPS": ["about-easybooks.md", "sample.re"]
   }
 }

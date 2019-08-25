@@ -3,7 +3,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { promisify } from 'util'
 
-
 const readFile = promisify(fs.readFile)
 const stat = promisify(fs.stat)
 const writeFile = promisify(fs.writeFile)
@@ -100,9 +99,7 @@ const writeYaml = async (filename: string, data: any) => {
 }
 
 const readConfig = async (configFilename: string): Promise<ConfigJson> => {
-  return JSON.parse(
-    await readFile(configFilename, { encoding: 'utf-8' }),
-  )
+  return JSON.parse(await readFile(configFilename, { encoding: 'utf-8' }))
 }
 
 const toDesination = (filename: string) => path.join('.review', filename)
@@ -130,6 +127,9 @@ const createCatalog = (catalog: Catalog) => {
 }
 
 const copyTemplates = async (templates: string[]) => {
+  if (templates.length === 0) {
+    return
+  }
   await templates.map(dir => copyFileRecursive(dir, toDesination(dir)))
 }
 
@@ -177,7 +177,7 @@ export const buildBook = async (
   const { catalog, tasks } = createCatalog(config.catalog)
   delete config.catalog
 
-  const templates = config.templates
+  const templates = config.templates || []
   delete config.templates
 
   if (config.sty_templates) {
