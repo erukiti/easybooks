@@ -1,6 +1,7 @@
 import * as childProcess from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as os from 'os'
 import { promisify } from 'util'
 
 const readFile = promisify(fs.readFile)
@@ -8,6 +9,7 @@ const stat = promisify(fs.stat)
 const writeFile = promisify(fs.writeFile)
 const copyFile = promisify(fs.copyFile)
 const readDir = promisify(fs.readdir)
+const mkdtemp = promisify(fs.mkdtemp)
 
 import unified from 'unified'
 import yaml from 'js-yaml'
@@ -133,21 +135,27 @@ const copyTemplates = async (templates: string[]) => {
   await templates.map(dir => copyFileRecursive(dir, toDesination(dir)))
 }
 
-const makePdfByReview = () => {
-  return new Promise((resolve, reject) => {
+const makePdfByReview = (reviewDir: string) => {
+  return new Promise<{ code: number; data: string }>((resolve, reject) => {
     console.log('Re:VIEW compile start')
-    childProcess
+    let data = ''
+    const cp = childProcess
       .spawn('review-pdfmaker', ['config.yml'], {
-        cwd: '.review',
-        stdio: 'inherit',
+        cwd: reviewDir,
       })
       .on('close', code => {
         if (code !== 0) {
-          reject(`error: ${code}`)
+          reject({ code, data })
         } else {
-          resolve()
+          resolve({ code: 0, data })
         }
       })
+    cp.stdout.on('data', chunk => {
+      data += chunk.toString()
+    })
+    cp.stderr.on('data', chunk => {
+      data += chunk.toString()
+    })
   })
 }
 
@@ -174,6 +182,23 @@ export const preparingConfig = (config: any) => {
   delete config.sty_templates
 
   return { catalog, templates, sty_templates }
+}
+
+export const debugBook = async (configFilename: string) => {
+  const tmpDir = await mkdtemp(path.join(os.tmpdir(), 'easybooks-'))
+  const config: ConfigJson = await readConfig(configFilename)
+
+  const { catalog, templates, sty_templates } = preparingConfig(config)
+
+  await copyFileRecursive('.', tmpDir)
+  const { code, data } = await buildBookWithPrepared(
+    config,
+    catalog,
+    templates,
+    sty_templates,
+    tmpDir,
+  ).catch(({ code, data }) => ({ code, data }))
+  return { code, data }
 }
 
 export const buildBookWithPrepared = async (
@@ -206,8 +231,9 @@ export const buildBookWithPrepared = async (
   ])
 
   // .review ディレクトリが全てそろったのでコンパイルする
-  await makePdfByReview()
+  const { code, data } = await makePdfByReview('.review')
   console.log('Re:VIEW compile done')
+  return { code, data }
 }
 export const buildBook = async (
   configFilename: string,

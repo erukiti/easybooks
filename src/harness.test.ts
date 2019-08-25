@@ -6,7 +6,7 @@ import childProcess from 'child_process'
 
 import yaml from 'js-yaml'
 
-import { buildBook } from './build-book'
+import { buildBook, debugBook } from './build-book'
 
 const mkdtemp = promisify(fs.mkdtemp)
 const writeFile = promisify(fs.writeFile)
@@ -21,13 +21,14 @@ test('review is installed?', () => {
 
 jest.setTimeout(1000 * 100)
 
+/*
 describe('buildBook test harness', () => {
   let tmpDir: string
   let reviewDir: string
   beforeEach(async () => {
     tmpDir = await mkdtemp(path.join(os.tmpdir(), 'easybooks-'))
     reviewDir = path.join(tmpDir, '.review')
-    console.log(tmpDir)
+    // console.log(tmpDir)
   })
 
   test('', async () => {
@@ -73,5 +74,47 @@ describe('buildBook test harness', () => {
     const st = await stat(path.join(reviewDir, 'example.pdf'))
     expect(st.isFile()).toBeTruthy()
     expect(st.size).toBeGreaterThan(1000)
+  })
+})
+*/
+
+describe('debugBook test harness', () => {
+  let tmpDir: string
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(path.join(os.tmpdir(), 'easybooks-'))
+  })
+
+  test('', async () => {
+    const conf = JSON.stringify({
+      aut: ['なまえ'],
+      texstyle: ['reviewmacro'],
+      catalog: { CHAPS: ['hoge.md'] },
+      sty_templates: {
+        url:
+          'https://github.com/TechBooster/ReVIEW-Template/archive/2cde584d33e8a6f5e6cf647e62fb6b3123ce4dfa.zip',
+        dir:
+          'ReVIEW-Template-2cde584d33e8a6f5e6cf647e62fb6b3123ce4dfa/articles/sty/',
+      },
+      review_version: 3.0,
+    })
+    const preTasks = [
+      writeFile(path.join(tmpDir, 'test.json'), conf, {
+        encoding: 'utf-8',
+      }),
+      writeFile(path.join(tmpDir, 'hoge.md'), '# hoge\n\0x11hoge', {
+        encoding: 'utf-8',
+      }),
+    ]
+    await Promise.all(preTasks)
+    process.chdir(tmpDir)
+    const { code, data } = await debugBook(path.join(tmpDir, 'test.json'))
+
+    const errorHints = data
+      .split('\n')
+      .find((line: string) => /\.\/.+\.tex:[0-9]+/.test(line))
+
+    expect(code).toBe(1)
+    expect(data).toMatch(/ERROR: review-pdfmaker: failed to run command: /)
+    console.log(errorHints)
   })
 })
