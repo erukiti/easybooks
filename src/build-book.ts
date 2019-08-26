@@ -24,16 +24,15 @@ import vFile from 'vfile'
 const review = unified().use(mdastToReviewPlugin)
 
 export const copyFileRecursive = async (srcDir: string, destDir: string) => {
-  const entries = await readDir(srcDir)
+  const entries = await readDir(srcDir, { withFileTypes: true })
   mkdirp.sync(destDir)
   await Promise.all(
     entries.map(async entry => {
-      const filename = path.join(srcDir, entry)
-      const st = await stat(filename)
-      if (st.isDirectory()) {
-        return copyFileRecursive(filename, path.join(destDir, entry))
+      const filename = path.join(srcDir, entry.name)
+      if (entry.isDirectory()) {
+        return copyFileRecursive(filename, path.join(destDir, entry.name))
       } else {
-        return copyFile(filename, path.join(destDir, entry))
+        return copyFile(filename, path.join(destDir, entry.name))
       }
     }),
   )
