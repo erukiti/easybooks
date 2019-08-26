@@ -4,7 +4,11 @@
   "author": "SASAKI Shunsuke <erukiti@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "jest",
+    "test:long": "jest --config jest-longtest.config.js",
+    "test:watch": "jest --watchAll",
+    "test:long:watch": "jest --config jest-longtest.config.js --watchAll"
   },
   "repository": "erukiti/easybooks",
   "bin": {

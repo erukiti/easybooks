@@ -6,9 +6,10 @@ import childProcess from 'child_process'
 
 import yaml from 'js-yaml'
 
-import { buildBook, debugBook } from './build-book'
+import { buildBook, debugBook, copyFileRecursive } from './build-book'
 
 const mkdtemp = promisify(fs.mkdtemp)
+const mkdir = promisify(fs.mkdir)
 const writeFile = promisify(fs.writeFile)
 const readFile = promisify(fs.readFile)
 const stat = promisify(fs.stat)
@@ -21,7 +22,6 @@ test('review is installed?', () => {
 
 jest.setTimeout(1000 * 100)
 
-/*
 describe('buildBook test harness', () => {
   let tmpDir: string
   let reviewDir: string
@@ -76,7 +76,6 @@ describe('buildBook test harness', () => {
     expect(st.size).toBeGreaterThan(1000)
   })
 })
-*/
 
 describe('debugBook test harness', () => {
   let tmpDir: string
@@ -117,4 +116,24 @@ describe('debugBook test harness', () => {
     expect(data).toMatch(/ERROR: review-pdfmaker: failed to run command: /)
     console.log(errorHints)
   })
+})
+
+test('copyFileRecursive', async () => {
+  const tmpDir = await mkdtemp(path.join(os.tmpdir(), 'easybooks-'))
+  await mkdir(path.join(tmpDir, 'a'))
+  await writeFile(path.join(tmpDir, 'a', 'hoge.txt'), 'hoge\n')
+  await mkdir(path.join(tmpDir, 'a', 'fuga'))
+  await writeFile(
+    path.join(tmpDir, 'a', 'fuga', 'piyo.bin'),
+    Buffer.from([0, 1, 2, 3, 4, 5]),
+  )
+
+  await copyFileRecursive(path.join(tmpDir, 'a'), path.join(tmpDir, 'b'))
+
+  expect(
+    await readFile(path.join(tmpDir, 'b', 'hoge.txt'), { encoding: 'utf-8' }),
+  ).toBe('hoge\n')
+  expect(await readFile(path.join(tmpDir, 'b', 'fuga', 'piyo.bin'))).toEqual(
+    Buffer.from([0, 1, 2, 3, 4, 5]),
+  )
 })

@@ -23,7 +23,7 @@ import vFile from 'vfile'
 
 const review = unified().use(mdastToReviewPlugin)
 
-const copyFileRecursive = async (srcDir: string, destDir: string) => {
+export const copyFileRecursive = async (srcDir: string, destDir: string) => {
   const entries = await readDir(srcDir)
   mkdirp.sync(destDir)
   await Promise.all(
@@ -144,11 +144,7 @@ const makePdfByReview = (reviewDir: string) => {
         cwd: reviewDir,
       })
       .on('close', code => {
-        if (code !== 0) {
-          reject({ code, data })
-        } else {
-          resolve({ code: 0, data })
-        }
+        resolve({ code, data })
       })
     cp.stdout.on('data', chunk => {
       data += chunk.toString()
@@ -197,7 +193,7 @@ export const debugBook = async (configFilename: string) => {
     templates,
     sty_templates,
     tmpDir,
-  ).catch(({ code, data }) => ({ code, data }))
+  )
   return { code, data }
 }
 
