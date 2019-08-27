@@ -1,8 +1,8 @@
 import unified from 'unified'
-import reviewPlugin from './review'
+import reviewStringifyPlugin from './review-stringify'
 import { parseMarkdown } from './markdown'
 
-const review = unified().use(reviewPlugin)
+const review = unified().use(reviewStringifyPlugin)
 const mdToReview = (src: string) => review.stringify(parseMarkdown(src))
 
 describe('heading', () => {

@@ -15,7 +15,7 @@ import unified from 'unified'
 import yaml from 'js-yaml'
 import mkdirp from 'mkdirp'
 
-import mdastToReviewPlugin from './review'
+import mdastToReviewPlugin from './review-stringify'
 import { parseMarkdown } from './markdown'
 import { fetchTemplates } from './fetch-templates'
 
