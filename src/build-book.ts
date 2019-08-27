@@ -23,17 +23,37 @@ import vFile from 'vfile'
 
 const review = unified().use(mdastToReviewPlugin)
 
+/**
+ * dir で指定したディレクトリ以下にあるファイルを
+ * 再帰的に全て取得する
+ * @param dir {string} - ディレクトリ名（相対・絶対指定可）
+ * @returns ファイル名一覧
+ */
+const readDirRecursive = async (dir: string): Promise<string[]> => {
+  const entries = await readDir(dir, { withFileTypes: true })
+  return ([] as string[]).concat(
+    ...(await Promise.all(
+      entries.map(async entry => {
+        const filename = path.join(dir, entry.name)
+        if (entry.isDirectory()) {
+          return readDirRecursive(filename)
+        } else {
+          return [filename]
+        }
+      }),
+    )),
+  )
+}
+
 export const copyFileRecursive = async (srcDir: string, destDir: string) => {
-  const entries = await readDir(srcDir, { withFileTypes: true })
-  mkdirp.sync(destDir)
+  const s = path.resolve(srcDir)
+  const d = path.resolve(destDir)
+  const entries = await readDirRecursive(s)
   await Promise.all(
-    entries.map(async entry => {
-      const filename = path.join(srcDir, entry.name)
-      if (entry.isDirectory()) {
-        return copyFileRecursive(filename, path.join(destDir, entry.name))
-      } else {
-        return copyFile(filename, path.join(destDir, entry.name))
-      }
+    entries.map(async name => {
+      const destName = path.join(d, name.substring(s.length))
+      await mkdirp.sync(path.dirname(destName))
+      return copyFile(name, destName)
     }),
   )
 }
