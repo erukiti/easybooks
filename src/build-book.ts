@@ -234,7 +234,6 @@ export const buildBookWithPrepared = async (
     const { url, dir } = sty_templates
     console.log(url, dir)
     await extractTemplates(url, dir, '.review/sty')
-    // 上書きの都合上、ここで先に実行しておく
   }
 
   // 大半の書き出しタスクは平行で行える
