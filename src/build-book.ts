@@ -15,8 +15,8 @@ import unified from 'unified'
 import yaml from 'js-yaml'
 import mkdirp from 'mkdirp'
 
-import mdastToReviewPlugin from './review-stringify'
-import { parseMarkdown } from './markdown'
+import mdastToReviewPlugin from './easybooks-ast/review-stringify'
+import { parseMarkdown } from './easybooks-ast/markdown'
 import { fetchTemplates } from './fetch-templates'
 
 import vFile from 'vfile'

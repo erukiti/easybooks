@@ -160,3 +160,12 @@ describe('table', () => {
     )
   })
 })
+
+describe('comment', () => {
+  test('single line', () => {
+    expect(mdToReview('<!-- ほげ -->')).toBe('#@# ほげ')
+  })
+  test('single line', () => {
+    expect(mdToReview('<!-- ほげ\nふが -->')).toBe('#@# ほげ\n#@# ふが')
+  })
+})

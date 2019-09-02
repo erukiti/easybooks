@@ -1,5 +1,4 @@
-import * as MDAST from 'mdast'
-import { MDASTNode, parseMeta } from './markdown'
+import * as EBAST from './ebast'
 
 interface Context {
   list: number
@@ -12,35 +11,28 @@ const getId = (context: Context) => {
   return `${context.chapter}-${id.toString().padStart(3, '0')}`
 }
 
-const root = (tree: MDAST.Root, context: Context) => {
+const root = (tree: EBAST.Root, context: Context) => {
   return tree.children.map(child => compiler(child, context)).join('\n')
 }
 
-const heading = (tree: MDAST.Heading, context: Context) => {
-  const options: string[] = []
+const heading = (tree: EBAST.Heading, context: Context) => {
   const s = tree.children
-    .map(child => {
-      if (child.type === 'linkReference') {
-        options.push(child.identifier as string)
-      } else {
-        return compiler(child, context)
-      }
-    })
+    .map(child => compiler(child, context))
     .join('')
     .trim()
-  const option = options.length === 0 ? '' : `[${options.join(',')}]`
+  const option = tree.options.length === 0 ? '' : `[${tree.options.join(',')}]`
   return `${'='.repeat(tree.depth)}${option} ${s}\n`
 }
 
-const text = (tree: MDAST.Text) => {
+const text = (tree: EBAST.Text) => {
   return tree.value
 }
 
-const paragraph = (tree: MDAST.Paragraph, context: Context) => {
+const paragraph = (tree: EBAST.Paragraph, context: Context) => {
   return `\n${tree.children.map(child => compiler(child, context)).join('')}\n`
 }
 
-const inlineCode = (tree: MDAST.InlineCode) => {
+const inlineCode = (tree: EBAST.InlineCode) => {
   return `@<code>{${tree.value.replace('}', '\\}')}}`
 }
 
@@ -48,26 +40,24 @@ const breakNode = () => {
   return `\n`
 }
 
-const code = (tree: MDAST.Code, context: Context) => {
+const code = (tree: EBAST.Code, context: Context) => {
   const lang = tree.lang ? `[${tree.lang}]` : ''
   if (tree.lang === 'sh') {
     return `//cmd{\n${tree.value}\n//}\n`
   }
 
-  const meta = parseMeta(tree.meta || '')
-
-  return `//listnum[${(meta.id || getId(context)).replace(
+  return `//listnum[${(tree.id || getId(context)).replace(
     '}',
     '\\}',
-  )}][${meta.caption || ''}]${lang}{\n${tree.value}\n//}\n`
+  )}][${tree.caption || ''}]${lang}{\n${tree.value}\n//}\n`
 }
 
-const link = (tree: MDAST.Link, context: Context) => {
+const link = (tree: EBAST.Link, context: Context) => {
   const s = tree.children.map(child => compiler(child, context)).join('')
   return `@<href>{${tree.url}${s ? `, ${s}` : ''}}`
 }
 
-const linkReference = (tree: MDAST.LinkReference, context: Context) => {
+const linkReference = (tree: EBAST.LinkReference, context: Context) => {
   const [tag, id] = (tree.identifier as string).split(':')
   if (tag !== '' && id !== '') {
     return `@<${tag}>{${id.replace('}', '\\}')}}`
@@ -75,7 +65,7 @@ const linkReference = (tree: MDAST.LinkReference, context: Context) => {
   throw new Error('linkRef: [tag:id] format is only supported.')
 }
 
-const list = (tree: MDAST.List, context: Context) => {
+const list = (tree: EBAST.List, context: Context) => {
   return (
     tree.children
       .map(child => compiler(child, { ...context, list: context.list + 1 }))
@@ -83,7 +73,7 @@ const list = (tree: MDAST.List, context: Context) => {
   )
 }
 
-const listItem = (tree: MDAST.ListItem, context: Context) => {
+const listItem = (tree: EBAST.ListItem, context: Context) => {
   return ` ${'*'.repeat(context.list)} ${tree.children
     .map(child => compiler(child, context))
     .join('')
@@ -92,16 +82,16 @@ const listItem = (tree: MDAST.ListItem, context: Context) => {
 
 const ignore = (tree: any, context: Context) => ''
 
-const blockquote = (tree: MDAST.Blockquote, context: Context) => {
+const blockquote = (tree: EBAST.Blockquote, context: Context) => {
   return `//quote{\n${tree.children.map(child => compiler(child, context))}}\n`
 }
 
-const footnoteReference = (tree: MDAST.FootnoteReference, context: Context) => {
+const footnoteReference = (tree: EBAST.FootnoteReference, context: Context) => {
   return `@<fn>{${tree.identifier}}`
 }
 
 const footnoteDefinition = (
-  tree: MDAST.FootnoteDefinition,
+  tree: EBAST.FootnoteDefinition,
   context: Context,
 ) => {
   return `//footnote[${tree.identifier}][${tree.children
@@ -110,29 +100,23 @@ const footnoteDefinition = (
     .trim()}]\n`
 }
 
-const emphasis = (tree: MDAST.Emphasis, context: Context) => {
+const emphasis = (tree: EBAST.Emphasis, context: Context) => {
   return `@<em>{${tree.children.map(child => compiler(child, context))}}`
 }
 
-const strong = (tree: MDAST.Strong, context: Context) => {
+const strong = (tree: EBAST.Strong, context: Context) => {
   return `@<strong>{${tree.children.map(child => compiler(child, context))}}`
 }
 
-const html = (tree: MDAST.HTML, context: Context) => {
-  if (tree.value.startsWith('<!--')) {
-    return tree.value
-      .replace(/^<!--/, '')
-      .replace(/-->$/, '')
-      .trim()
-      .split('\n')
-      .map(line => `#@# ${line}`)
-      .join('\n')
-  } else {
-    throw new Error(`supported HTML is comment only.\n${tree.value}`)
-  }
+const comment = (tree: EBAST.Comment, context: Context) => {
+  return tree.value
+    .trim()
+    .split('\n')
+    .map(line => `#@# ${line}`)
+    .join('\n')
 }
 
-const image = (tree: MDAST.Image, context: Context) => {
+const image = (tree: EBAST.Image, context: Context) => {
   const url = tree.url.replace(/^images\//, '').replace(/\.[a-zA-Z0-9]$/, '')
   return `//image[${url}][${tree.alt}]\n`
 }
@@ -143,7 +127,7 @@ const TableAlign = {
   right: 'r',
 }
 
-const table = (tree: MDAST.Table, context: Context) => {
+const table = (tree: EBAST.Table, context: Context) => {
   const [header, ...rows] = tree.children.map(child => compiler(child, context))
 
   const lines: string[] = []
@@ -167,11 +151,11 @@ const table = (tree: MDAST.Table, context: Context) => {
   return lines.join('\n')
 }
 
-const tableRow = (tree: MDAST.TableRow, context: Context) => {
+const tableRow = (tree: EBAST.TableRow, context: Context) => {
   return tree.children.map(child => compiler(child, context)).join('\t')
 }
 
-const tableCell = (tree: MDAST.TableCell, context: Context) => {
+const tableCell = (tree: EBAST.TableCell, context: Context) => {
   return tree.children.map(child => compiler(child, context)).join('')
 }
 
@@ -193,14 +177,14 @@ const compilers = {
   footnoteDefinition,
   emphasis,
   strong,
-  html,
   image,
   table,
   tableRow,
   tableCell,
+  comment,
 }
 
-export const compiler = (tree: MDASTNode, context: Context): string => {
+export const compiler = (tree: EBAST.Node, context: Context): string => {
   if (tree.type in compilers) {
     const key = tree.type as keyof typeof compilers
     return compilers[key](tree, context)
@@ -212,7 +196,7 @@ export const compiler = (tree: MDASTNode, context: Context): string => {
 
 export default function mdToReview() {
   // @ts-ignore
-  this.Compiler = (tree: MDAST.Root, vfile: any) => {
+  this.Compiler = (tree: EBAST.Root, vfile: any) => {
     return compiler(tree, {
       list: 0,
       id: 0,
