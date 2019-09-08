@@ -3,99 +3,108 @@ import reviewStringifyPlugin from './review-stringify'
 import { parseMarkdown } from './markdown'
 
 const review = unified().use(reviewStringifyPlugin)
-const mdToReview = (src: string) => review.stringify(parseMarkdown(src))
+const mdToReview = (src: string) =>
+  parseMarkdown(src).then(node => review.stringify(node))
 
 describe('heading', () => {
   test('standard heading', async () => {
-    expect(mdToReview(`# hoge`)).toBe(`= hoge\n`)
-    expect(mdToReview(`## fuga`)).toBe(`== fuga\n`)
+    expect(await mdToReview(`# hoge`)).toBe(`= hoge\n`)
+    expect(await mdToReview(`## fuga`)).toBe(`== fuga\n`)
   })
 
-  test('with option', () => {
-    expect(mdToReview(`### [column] コラム`)).toBe(`===[column] コラム\n`)
+  test('with option', async () => {
+    expect(await mdToReview(`### [column] コラム`)).toBe(`===[column] コラム\n`)
   })
 })
 
 describe('paragraph', () => {
-  test('inline code', () => {
-    expect(mdToReview('ほげは`hoge`です')).toBe(`\nほげは@<code>{hoge}です\n`)
+  test('inline code', async () => {
+    expect(await mdToReview('ほげは`hoge`です')).toBe(
+      `\nほげは@<code>{hoge}です\n`,
+    )
   })
 
-  test('', () => {
-    expect(mdToReview('ほげ\n')).toBe('\nほげ\n')
-    expect(mdToReview('ほげ\nほげ\n')).toBe('\nほげ\nほげ\n')
+  test('', async () => {
+    expect(await mdToReview('ほげ\n')).toBe('\nほげ\n')
+    expect(await mdToReview('ほげ\nほげ\n')).toBe('\nほげ\nほげ\n')
     // expect(mdToReview('ほげ\n\nふが')).toBe('\nほげ\n\nふが\n')
   })
 
-  test('link', () => {
-    expect(mdToReview('[ほげ](http://example.com)')).toBe(
+  test('link', async () => {
+    expect(await mdToReview('[ほげ](http://example.com)')).toBe(
       '\n@<href>{http://example.com, ほげ}\n',
     )
   })
 })
 
 describe('code block', () => {
-  test('no lang', () => {
-    expect(mdToReview('```\nほげ\n```\n')).toBe(
+  test('no lang', async () => {
+    expect(await mdToReview('```\nほげ\n```\n')).toBe(
       '//listnum[-000][]{\nほげ\n//}\n',
     )
   })
-  test('lang js', () => {
-    expect(mdToReview('```js\nconst a = 1\n```\n')).toBe(
+  test('lang js', async () => {
+    expect(await mdToReview('```js\nconst a = 1\n```\n')).toBe(
       '//listnum[-000][][js]{\nconst a = 1\n//}\n',
     )
   })
-  test('lang sh', () => {
-    expect(mdToReview('```sh\n$ hoge\n```\n')).toBe('//cmd{\n$ hoge\n//}\n')
+  test('lang sh', async () => {
+    expect(await mdToReview('```sh\n$ hoge\n```\n')).toBe(
+      '//cmd{\n$ hoge\n//}\n',
+    )
   })
 
-  test('caption', () => {
-    expect(mdToReview('```js {caption="ほげ"}\nconst a = 1\n```\n')).toBe(
+  test('caption', async () => {
+    expect(await mdToReview('```js {caption="ほげ"}\nconst a = 1\n```\n')).toBe(
       '//listnum[-000][ほげ][js]{\nconst a = 1\n//}\n',
     )
   })
 
-  test('caption & id', () => {
-    expect(mdToReview('```js {id=hoge caption=ほげ}\nconst a = 1\n```\n')).toBe(
-      '//listnum[hoge][ほげ][js]{\nconst a = 1\n//}\n',
-    )
+  test('caption & id', async () => {
+    expect(
+      await mdToReview('```js {id=hoge caption=ほげ}\nconst a = 1\n```\n'),
+    ).toBe('//listnum[hoge][ほげ][js]{\nconst a = 1\n//}\n')
   })
 })
 
 describe('list', () => {
-  test('', () => {
-    expect(mdToReview('* hoge\n* fuga')).toBe(' * hoge\n * fuga\n\n')
-    expect(mdToReview('* hoge\n  - fuga')).toBe(' * hoge\n ** fuga\n\n')
+  test('', async () => {
+    expect(await mdToReview('* hoge\n* fuga')).toBe(' * hoge\n * fuga\n\n')
+    expect(await mdToReview('* hoge\n  - fuga')).toBe(' * hoge\n ** fuga\n\n')
   })
 })
 
 describe('thematic break', () => {
   test('', () => {
-    expect(mdToReview('---\n')).toBe('')
+    expect(mdToReview('---\n')).resolves.toBe('')
   })
 })
 
 describe('blockquote', () => {
   test('', () => {
-    expect(mdToReview('> hoge\n')).toBe('//quote{\n\nhoge\n}\n')
+    expect(mdToReview('> hoge\n')).resolves.toBe('//quote{\n\nhoge\n}\n')
   })
 })
 
 describe('link reference [list:ID] format', () => {
   test('@<img>{image}', () => {
-    expect(mdToReview('hoge[img:image]fuga')).toBe(`\nhoge@<img>{image}fuga\n`)
+    expect(mdToReview('hoge[img:image]fuga')).resolves.toBe(
+      `\nhoge@<img>{image}fuga\n`,
+    )
   })
 })
 
 describe('footnote reference', () => {
   test('', () => {
-    expect(mdToReview('fuga[^hoge]piyo')).toBe('\nfuga@<fn>{hoge}piyo\n')
+    expect(mdToReview('fuga[^hoge]piyo')).resolves.toBe(
+      '\nfuga@<fn>{hoge}piyo\n',
+    )
   })
 })
 
 describe('footnote definition', () => {
   test('', () => {
-    expect(mdToReview('[^hoge]: hoge とは「ほげ」である。\n')).toBe(
+    expect(mdToReview('[^hoge]: hoge とは「ほげ」である。\n')).resolves.toBe(
       '//footnote[hoge][hoge とは「ほげ」である。]\n',
     )
   })
@@ -103,13 +112,17 @@ describe('footnote definition', () => {
 
 describe('emphasis', () => {
   test('', () => {
-    expect(mdToReview('hoge*fuga*piyo')).toBe('\nhoge@<em>{fuga}piyo\n')
+    expect(mdToReview('hoge*fuga*piyo')).resolves.toBe(
+      '\nhoge@<em>{fuga}piyo\n',
+    )
   })
 })
 
 describe('strong', () => {
   test('', () => {
-    expect(mdToReview('hoge**fuga**piyo')).toBe('\nhoge@<strong>{fuga}piyo\n')
+    expect(mdToReview('hoge**fuga**piyo')).resolves.toBe(
+      '\nhoge@<strong>{fuga}piyo\n',
+    )
   })
 })
 
@@ -124,7 +137,7 @@ describe('table', () => {
           '',
         ].join('\n'),
       ),
-    ).toBe(
+    ).resolves.toBe(
       [
         '//tsize[|latex||l|l|l|]',
         '//table[-000][]{',
@@ -147,7 +160,7 @@ describe('table', () => {
           '',
         ].join('\n'),
       ),
-    ).toBe(
+    ).resolves.toBe(
       [
         '//tsize[|latex||l|c|r|]',
         '//table[-000][]{',
@@ -163,9 +176,11 @@ describe('table', () => {
 
 describe('comment', () => {
   test('single line', () => {
-    expect(mdToReview('<!-- ほげ -->')).toBe('#@# ほげ')
+    expect(mdToReview('<!-- ほげ -->')).resolves.toBe('#@# ほげ')
   })
   test('single line', () => {
-    expect(mdToReview('<!-- ほげ\nふが -->')).toBe('#@# ほげ\n#@# ふが')
+    expect(mdToReview('<!-- ほげ\nふが -->')).resolves.toBe(
+      '#@# ほげ\n#@# ふが',
+    )
   })
 })

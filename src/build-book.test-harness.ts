@@ -48,9 +48,18 @@ describe('buildBook test harness', () => {
       writeFile(path.join(tmpDir, 'test.json'), conf, {
         encoding: 'utf-8',
       }),
-      writeFile(path.join(tmpDir, 'hoge.md'), '# hoge\nhoge', {
-        encoding: 'utf-8',
-      }),
+      writeFile(
+        path.join(tmpDir, 'hoge.md'),
+        [
+          '# hoge',
+          'hoge',
+          '```js {src=https://raw.githubusercontent.com/erukiti/easybooks/8b5168316d46504161dfb377fb9f4d3faa80b621/src/build-book.ts#L2-L3}',
+          '```',
+        ].join('\n'),
+        {
+          encoding: 'utf-8',
+        },
+      ),
     ]
     await Promise.all(preTasks)
     await buildBook(path.join(tmpDir, 'test.json'))
@@ -70,6 +79,25 @@ describe('buildBook test harness', () => {
         }),
       ),
     ).toEqual({ aut: ['なまえ'], texstyle: ['reviewmacro'], review_version: 3 })
+
+    expect(
+      readFile(path.join(reviewDir, 'hoge.re'), { encoding: 'utf-8' }).then(
+        text =>
+          text
+            .split('\n')
+            .filter(line => line)
+            .join('\n'),
+      ),
+    ).resolves.toEqual(
+      [
+        '= hoge',
+        'hoge',
+        '//listnum[hoge-000][][js]{',
+        `import * as fs from 'fs'`,
+        `import * as path from 'path'`,
+        '//}',
+      ].join('\n'),
+    )
 
     const st = await stat(path.join(reviewDir, 'example.pdf'))
     expect(st.isFile()).toBeTruthy()

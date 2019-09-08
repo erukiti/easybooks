@@ -11,6 +11,7 @@ import stringify from 'remark-stringify'
 
 import * as EBAST from './ebast'
 import mdToEb from './md-to-eb'
+import importPlugin from './import-source'
 
 export const markdown = unified()
   .data('settings', { footnotes: true, gfm: true })
@@ -24,9 +25,15 @@ export const markdown = unified()
 
 const toEb = unified().use(mdToEb)
 
-export const parseMarkdown = (vfile: string) => {
+const is = unified().use(importPlugin)
+
+export const importSource = async (node: EBAST.Node) => {
+  await is.run(node)
+}
+
+export const parseMarkdown = async (vfile: string) => {
   const md = markdown.parse(vfile)
-  toEb.runSync(md)
+  await toEb.run(md)
   return md as EBAST.Node
 }
 

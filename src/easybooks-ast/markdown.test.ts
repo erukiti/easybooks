@@ -35,11 +35,13 @@ describe('parseMeta', () => {
 })
 
 describe('parseMarkdown', () => {
-  test('Code', () => {
-    const children = parseMarkdown(
-      '```js {id=1 caption=hoge}\nconsole.log(1)\n```\n',
-    ).children as any[]
-    expect(children[0]).toEqual(
+  const parse = (md: string) =>
+    parseMarkdown(md).then(node => (node.children as any[])[0])
+
+  test('code', () => {
+    expect(
+      parse(['```js {id=1 caption=hoge}', 'console.log(1)', '```'].join('\n')),
+    ).resolves.toEqual(
       expect.objectContaining({
         type: 'code',
         lang: 'js',
@@ -47,6 +49,59 @@ describe('parseMarkdown', () => {
         caption: 'hoge',
         value: 'console.log(1)',
       }),
+    )
+  })
+
+  test('code with src', () => {
+    expect(
+      parse(
+        [
+          '```js {src=https://raw.githubusercontent.com/erukiti/easybooks/8b5168316d46504161dfb377fb9f4d3faa80b621/src/build-book.ts#L10-L20}',
+          '```',
+        ].join('\n'),
+      ),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        type: 'code',
+        lang: 'js',
+        src: {
+          url:
+            'https://raw.githubusercontent.com/erukiti/easybooks/8b5168316d46504161dfb377fb9f4d3faa80b621/src/build-book.ts',
+          startLine: 10,
+          endLine: 20,
+        },
+      }),
+    )
+  })
+
+  test('table caption', () => {
+    expect(
+      parse(
+        [, '|hoge|fuga|', '|----|----|', '|ほげ|ふが|', '|caption=hoge|'].join(
+          '\n',
+        ),
+      ),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        type: 'table',
+        caption: 'hoge',
+      }),
+    )
+  })
+
+  test('table caption and id', () => {
+    expect(
+      parse(
+        [
+          ,
+          '|hoge|fuga|',
+          '|----|----|',
+          '|ほげ|ふが|',
+          '|caption=hoge id=fuga|',
+        ].join('\n'),
+      ),
+    ).resolves.toEqual(
+      expect.objectContaining({ type: 'table', caption: 'hoge', id: 'fuga' }),
     )
   })
 })

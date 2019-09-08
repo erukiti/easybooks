@@ -16,7 +16,7 @@ import yaml from 'js-yaml'
 import mkdirp from 'mkdirp'
 
 import mdastToReviewPlugin from './easybooks-ast/review-stringify'
-import { parseMarkdown } from './easybooks-ast/markdown'
+import { parseMarkdown, importSource } from './easybooks-ast/markdown'
 import { fetchTemplates } from './fetch-templates'
 
 import vFile from 'vfile'
@@ -98,7 +98,8 @@ export type ConfigJson = ConfigYaml & {
 
 const convert = async (src: string, dest: string) => {
   const markdownText = await readFile(src, { encoding: 'utf-8' })
-  const root = parseMarkdown(markdownText)
+  const root = await parseMarkdown(markdownText)
+  await importSource(root)
   console.log('wrote:', dest)
   mkdirp.sync(path.dirname(dest))
   await writeFile(

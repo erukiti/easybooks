@@ -4,12 +4,8 @@ import * as EBAST from './ebast'
 import { traverse } from './utils'
 
 const reKeyValue = /^(([a-zA-Z0-9]+)(?:=([^" ]+)|="([^"]+)")?)/
-export const parseMeta = (meta: string): { [props: string]: any } => {
-  if (!meta) {
-    return {}
-  }
-  meta = meta.trim().replace(/^\{(.*)\}$/, '$1')
 
+const parseKeyValue = (meta: string): { [props: string]: string } => {
   const results: { [props: string]: any } = {}
   let matched
   while ((matched = reKeyValue.exec(meta))) {
@@ -21,10 +17,31 @@ export const parseMeta = (meta: string): { [props: string]: any } => {
   return results
 }
 
+export const parseMeta = (meta: string): { [props: string]: string } => {
+  if (!meta) {
+    return {}
+  }
+
+  return parseKeyValue(meta.trim().replace(/^\{(.*)\}$/, '$1'))
+}
+
 const enterCode = (node: MDAST.Code & EBAST.Code) => {
-  const { id, caption } = parseMeta(node.meta || '')
+  const { id, caption, src, filename } = parseMeta(node.meta || '')
   node.id = id
   node.caption = caption
+  node.filename = filename
+
+  if (src) {
+    const [url, lines] = src.split('#')
+    if (!lines) {
+      node.src = { url }
+    } else {
+      const [startLine, endLine] = lines
+        .split('-')
+        .map(n => Number.parseInt(n.replace(/^L/, '')))
+      node.src = { url, startLine, endLine }
+    }
+  }
 }
 
 const enterHeading = (node: MDAST.Heading & EBAST.Heading) => {
@@ -58,8 +75,25 @@ const enterHtml = (node: MDAST.HTML & EBAST.Comment) => {
   node.value = value
 }
 
-const transformer = (tree: MDAST.Root) => {
-  traverse(tree, {
+const enterTable = (node: MDAST.Table & EBAST.Table) => {
+  const children: MDAST.TableRow[] = node.children
+  if (children) {
+    const row = children[children.length - 1]
+    if (
+      row.children.length === 1 &&
+      row.children[0].children.length === 1 &&
+      row.children[0].children[0].type === 'text'
+    ) {
+      const { caption, id } = parseKeyValue(row.children[0].children[0].value)
+      node.caption = caption
+      node.id = id
+      node.children.pop() // remove last element
+    }
+  }
+}
+
+const transformer = async (tree: MDAST.Root) => {
+  await traverse(tree, {
     code: {
       enter: enterCode,
     },
@@ -68,6 +102,9 @@ const transformer = (tree: MDAST.Root) => {
     },
     html: {
       enter: enterHtml,
+    },
+    table: {
+      enter: enterTable,
     },
   })
 }

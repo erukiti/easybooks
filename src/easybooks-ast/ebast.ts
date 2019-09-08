@@ -1,7 +1,7 @@
 /*
  * see. https://github.com/syntax-tree/mdast
  * see. https://github.com/remarkjs/remark
- * EBAST is Markdown AST extends Re:VIEW features
+ * EBAST is a Markdown AST with an expanded Re:VIEW features.
  */
 
 import Unist from 'unist'
@@ -62,6 +62,8 @@ export interface Table extends Parent {
   type: 'table'
   align: Array<'left' | 'right' | 'center' | null>
   children: TableContent[]
+  caption?: string
+  id?: string
 }
 
 export interface TableRow extends Parent {
@@ -89,6 +91,12 @@ export interface Code extends Literal {
   meta?: string
   id?: string
   caption?: string
+  filename?: string
+  src?: {
+    url: string
+    startLine?: number
+    endLine?: number
+  }
 }
 
 export interface YAML extends Literal {

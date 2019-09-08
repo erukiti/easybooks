@@ -1,25 +1,27 @@
 export interface UnistVisitor {
-  enter?: (node: any, root: any) => void
-  leave?: (node: any, root: any) => void
+  enter?: (node: any, root: any) => Promise<void> | void
+  leave?: (node: any, root: any) => Promise<void> | void
 }
 
 export type UnistVisitors = { [nodeName: string]: UnistVisitor }
 
-export const traverse = (
+export const traverse = async (
   node: any,
   visitors: UnistVisitors,
   root: any = node,
 ) => {
   const visitor = node.type in visitors ? visitors[node.type] : {}
   if (visitor.enter) {
-    visitor.enter(node, root)
+    await visitor.enter(node, root)
   }
 
   if (node.children && Array.isArray(node.children)) {
-    node.children.forEach((child: any) => traverse(child, visitors, root))
+    await Promise.all(
+      node.children.map((child: any) => traverse(child, visitors, root)),
+    )
   }
 
   if (visitor.leave) {
-    visitor.leave(node, root)
+    await visitor.leave(node, root)
   }
 }
