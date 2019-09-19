@@ -1,4 +1,4 @@
-import { preparingConfig } from '.'
+import { preparingConfig } from './config'
 
 describe('prepareConfig', () => {
   test('none', () => {

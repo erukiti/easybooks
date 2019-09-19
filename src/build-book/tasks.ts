@@ -7,10 +7,12 @@ import mkdirp from 'mkdirp'
 import vFile from 'vfile'
 import yaml from 'js-yaml'
 
-import { Catalog, toDesination } from '.'
+import { Catalog } from './config'
 import { copyFileRecursive } from '../files'
 import mdastToReviewPlugin from '../easybooks-ast/review-stringify'
 import { parseMarkdown, importSource } from '../easybooks-ast/markdown'
+
+export const toDesination = (filename: string) => path.join('.review', filename)
 
 const readFile = promisify(fs.readFile)
 const writeFile = promisify(fs.writeFile)
