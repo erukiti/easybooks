@@ -3,3 +3,4 @@ dist
 *.log
 *.tgz
 .review
+yarn.lock
