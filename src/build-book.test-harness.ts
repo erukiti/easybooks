@@ -6,7 +6,8 @@ import childProcess from 'child_process'
 
 import yaml from 'js-yaml'
 
-import { buildBook, debugBook, copyFileRecursive } from './build-book'
+import { buildBook, debugBook } from './build-book'
+import { copyFileRecursive } from './files'
 
 const mkdtemp = promisify(fs.mkdtemp)
 const mkdir = promisify(fs.mkdir)

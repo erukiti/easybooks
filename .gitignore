@@ -4,3 +4,4 @@ dist
 *.tgz
 .review
 yarn.lock
+.vscode

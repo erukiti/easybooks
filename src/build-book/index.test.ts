@@ -1,4 +1,4 @@
-import { preparingConfig } from './build-book'
+import { preparingConfig } from '.'
 
 describe('prepareConfig', () => {
   test('none', () => {
