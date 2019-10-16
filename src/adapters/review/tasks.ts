@@ -7,12 +7,13 @@ import mkdirp from 'mkdirp'
 import vFile from 'vfile'
 import yaml from 'js-yaml'
 
-import { Catalog } from './config'
-import { copyFileRecursive } from '../files'
-import mdastToReviewPlugin from '../easybooks-ast/review-stringify'
-import { parseMarkdown, importSource } from '../easybooks-ast/markdown'
+import { Catalog } from '../../ports/build-book'
+import { copyFileRecursive } from '../../files'
+import mdastToReviewPlugin from '../../easybooks-ast/review-stringify'
+import { parseMarkdown, importSource } from '../../easybooks-ast/markdown'
 
-export const toDesination = (filename: string) => path.join('.review', filename)
+export const toDesination = (filename: string) =>
+  path.join('.review', filename)
 
 const readFile = promisify(fs.readFile)
 const writeFile = promisify(fs.writeFile)
@@ -24,7 +25,6 @@ export const convert = async (src: string, dest: string) => {
   const markdownText = await readFile(src, { encoding: 'utf-8' })
   const root = await parseMarkdown(markdownText)
   await importSource(root)
-  console.log('wrote:', dest)
   mkdirp.sync(path.dirname(dest))
   await writeFile(
     dest,
@@ -39,7 +39,6 @@ export const convert = async (src: string, dest: string) => {
 }
 
 export const writeYaml = async (filename: string, data: any) => {
-  console.log('wrote:', filename)
   mkdirp.sync(path.dirname(filename))
   await writeFile(filename, yaml.dump(data))
 }

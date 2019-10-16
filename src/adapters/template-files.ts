@@ -6,6 +6,8 @@ import fetch from 'node-fetch'
 import JSZip from 'jszip'
 import mkdirp from 'mkdirp'
 
+import { Presentation } from '../ports/presentation'
+
 // FIXME: キャッシュの仕組みを導入する
 
 const writeFile = promisify(fs.writeFile)
@@ -26,7 +28,9 @@ const fetchTemplates = async (url: string, dir: string) => {
         const st = file.nodeStream()
         st.on('data', data => (text += data.toString()))
         st.on('error', err => reject(err))
-        st.on('end', () => resolve({ text, name: relPath.slice(dir.length) }))
+        st.on('end', () =>
+          resolve({ text, name: relPath.slice(dir.length) }),
+        )
       }),
     )
   })
@@ -37,16 +41,17 @@ export const extractTemplates = async (
   url: string,
   dir: string,
   dest: string,
+  pres: Presentation,
 ) => {
   mkdirp.sync(dest)
-  console.log('fetch TeX sty templates from:', url)
+  pres.info(`fetch TeX sty templates from: ${url}`)
   const files = await fetchTemplates(url, dir)
-  console.log('fetch done')
+  pres.info('fetch done')
   return Promise.all(
     files.map(async file => {
-      console.log(file.name)
+      pres.info(file.name)
       await writeFile(path.join(dest, file.name), file.text)
-      console.log('TeX sty extracted:', path.join(dest, file.name))
+      pres.info(`TeX sty extracted: ${path.join(dest, file.name)}`)
     }),
   )
 }
