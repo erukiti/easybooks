@@ -13,7 +13,9 @@ describe('heading', () => {
   })
 
   test('with option', async () => {
-    expect(await mdToReview(`### [column] コラム`)).toBe(`===[column] コラム\n`)
+    expect(await mdToReview(`### [column] コラム`)).toBe(
+      `===[column] コラム\n`,
+    )
   })
 })
 
@@ -55,9 +57,9 @@ describe('code block', () => {
   })
 
   test('caption', async () => {
-    expect(await mdToReview('```js {caption="ほげ"}\nconst a = 1\n```\n')).toBe(
-      '//listnum[-000][ほげ][js]{\nconst a = 1\n//}\n',
-    )
+    expect(
+      await mdToReview('```js {caption="ほげ"}\nconst a = 1\n```\n'),
+    ).toBe('//listnum[-000][ほげ][js]{\nconst a = 1\n//}\n')
   })
 
   test('caption & id', async () => {
@@ -70,7 +72,9 @@ describe('code block', () => {
 describe('list', () => {
   test('', async () => {
     expect(await mdToReview('* hoge\n* fuga')).toBe(' * hoge\n * fuga\n\n')
-    expect(await mdToReview('* hoge\n  - fuga')).toBe(' * hoge\n ** fuga\n\n')
+    expect(await mdToReview('* hoge\n  - fuga')).toBe(
+      ' * hoge\n ** fuga\n\n',
+    )
   })
 })
 
@@ -82,7 +86,9 @@ describe('thematic break', () => {
 
 describe('blockquote', () => {
   test('', () => {
-    expect(mdToReview('> hoge\n')).resolves.toBe('//quote{\n\nhoge\n}\n')
+    expect(mdToReview('> hoge\n')).resolves.toBe(
+      ['//quote{', '', 'hoge', '//}', ''].join('\n'),
+    )
   })
 })
 
@@ -104,9 +110,9 @@ describe('footnote reference', () => {
 
 describe('footnote definition', () => {
   test('', () => {
-    expect(mdToReview('[^hoge]: hoge とは「ほげ」である。\n')).resolves.toBe(
-      '//footnote[hoge][hoge とは「ほげ」である。]\n',
-    )
+    expect(
+      mdToReview('[^hoge]: hoge とは「ほげ」である。\n'),
+    ).resolves.toBe('//footnote[hoge][hoge とは「ほげ」である。]\n')
   })
 })
 

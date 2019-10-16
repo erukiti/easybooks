@@ -11,6 +11,9 @@ export const makePdfByReview = (reviewDir: string) => {
       .on('close', code => {
         resolve({ code, data })
       })
+      .on('error', err => {
+        reject(data)
+      })
     cp.stdout.on('data', chunk => {
       data += chunk.toString()
     })

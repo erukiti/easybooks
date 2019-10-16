@@ -20,7 +20,8 @@ const heading = (tree: EBAST.Heading, context: Context) => {
     .map(child => compiler(child, context))
     .join('')
     .trim()
-  const option = tree.options.length === 0 ? '' : `[${tree.options.join(',')}]`
+  const option =
+    tree.options.length === 0 ? '' : `[${tree.options.join(',')}]`
   return `${'='.repeat(tree.depth)}${option} ${s}\n`
 }
 
@@ -29,7 +30,9 @@ const text = (tree: EBAST.Text) => {
 }
 
 const paragraph = (tree: EBAST.Paragraph, context: Context) => {
-  return `\n${tree.children.map(child => compiler(child, context)).join('')}\n`
+  return `\n${tree.children
+    .map(child => compiler(child, context))
+    .join('')}\n`
 }
 
 const inlineCode = (tree: EBAST.InlineCode) => {
@@ -83,10 +86,15 @@ const listItem = (tree: EBAST.ListItem, context: Context) => {
 const ignore = (tree: any, context: Context) => ''
 
 const blockquote = (tree: EBAST.Blockquote, context: Context) => {
-  return `//quote{\n${tree.children.map(child => compiler(child, context))}}\n`
+  return `//quote{\n${tree.children.map(child =>
+    compiler(child, context),
+  )}//}\n`
 }
 
-const footnoteReference = (tree: EBAST.FootnoteReference, context: Context) => {
+const footnoteReference = (
+  tree: EBAST.FootnoteReference,
+  context: Context,
+) => {
   return `@<fn>{${tree.identifier}}`
 }
 
@@ -105,7 +113,9 @@ const emphasis = (tree: EBAST.Emphasis, context: Context) => {
 }
 
 const strong = (tree: EBAST.Strong, context: Context) => {
-  return `@<strong>{${tree.children.map(child => compiler(child, context))}}`
+  return `@<strong>{${tree.children.map(child =>
+    compiler(child, context),
+  )}}`
 }
 
 const comment = (tree: EBAST.Comment, context: Context) => {
@@ -117,7 +127,9 @@ const comment = (tree: EBAST.Comment, context: Context) => {
 }
 
 const image = (tree: EBAST.Image, context: Context) => {
-  const url = tree.url.replace(/^images\//, '').replace(/\.[a-zA-Z0-9]$/, '')
+  const url = tree.url
+    .replace(/^images\//, '')
+    .replace(/\.[a-zA-Z0-9]$/, '')
   return `//image[${url}][${tree.alt}]\n`
 }
 
@@ -128,7 +140,9 @@ const TableAlign = {
 }
 
 const table = (tree: EBAST.Table, context: Context) => {
-  const [header, ...rows] = tree.children.map(child => compiler(child, context))
+  const [header, ...rows] = tree.children.map(child =>
+    compiler(child, context),
+  )
 
   const lines: string[] = []
 

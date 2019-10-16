@@ -1,10 +1,10 @@
 {
   "name": "easybooks",
-  "version": "0.1.13",
+  "version": "0.1.23",
   "author": "SASAKI Shunsuke <erukiti@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist; tsc",
     "test": "jest",
     "test:long": "jest --config jest-longtest.config.js",
     "test:watch": "jest --watchAll",
@@ -14,6 +14,8 @@
   "bin": {
     "easybooks": "bin/easybooks"
   },
+  "main": "dist/index.js",
+  "types": "src/index.ts",
   "dependencies": {
     "arg": "^4.1.1",
     "js-yaml": "3.13.1",
@@ -29,23 +31,24 @@
     "remark-math": "2.0.0",
     "remark-parse": "7.0.1",
     "remark-stringify": "7.0.3",
-    "unified": "8.4.0"
+    "source-map-support": "^0.5.13",
+    "unified": "8.4.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.0",
-    "@babel/preset-env": "^7.6.0",
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
     "@babel/preset-typescript": "^7.6.0",
-    "@types/jest": "^24.0.18",
+    "@types/jest": "^24.0.19",
     "@types/js-yaml": "3.12.1",
     "@types/jszip": "^3.1.6",
     "@types/mdast": "^3.0.3",
     "@types/mkdirp": "^0.5.2",
-    "@types/node": "^12.7.5",
-    "@types/node-fetch": "^2.5.1",
+    "@types/node": "^12.11.1",
+    "@types/node-fetch": "^2.5.2",
     "@types/unist": "2.0.3",
     "babel-jest": "^24.9.0",
     "jest": "24.9.0",
-    "typescript": "3.6.3"
+    "typescript": "3.6.4"
   },
   "babel": {
     "presets": [

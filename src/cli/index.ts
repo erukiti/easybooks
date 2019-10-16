@@ -1,7 +1,15 @@
-import { buildBook } from '../build-book'
+import path from 'path'
 
-const cli = (args: any) => {
-  buildBook(args._[0])
+import { buildBook } from '../build-book'
+import { readConfig } from '../build-book/config'
+
+const cli = async (args: any) => {
+  try {
+    const config = await readConfig(args._[0])
+    buildBook(config, path.dirname(args._[0]))
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 cli({

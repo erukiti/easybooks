@@ -9,9 +9,10 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "sourceMap": true,
     "jsx": "preserve",
     "outDir": "dist"
   },
-  "include": ["src", "decls.d.ts"],
-  "exclude": ["node_modules"]
+  "include": ["**/src/**/*.ts", "decls.d.ts"],
+  "exclude": ["node_modules", "**/*.test.ts", "**/*.test-harness.ts"]
 }

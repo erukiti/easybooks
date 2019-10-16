@@ -59,16 +59,16 @@ export const buildBookWithPrepared = async (
   ])
 
   // .review ディレクトリが全てそろったのでコンパイルする
-  const { code, data } = await makePdfByReview('.review')
+  const { code, data } = await makePdfByReview('.review').catch(data => ({
+    code: '',
+    data,
+  }))
+  // console.log(data)
   console.log('Re:VIEW compile done')
   return { code, data }
 }
-export const buildBook = async (
-  configFilename: string,
-  projectDir = path.dirname(configFilename),
-) => {
-  const config: ConfigJson = await readConfig(configFilename)
 
+export const buildBook = async (config: ConfigJson, projectDir: string) => {
   const { catalog, templates, sty_templates } = preparingConfig(config)
   await buildBookWithPrepared(
     config,

@@ -8,6 +8,7 @@ import yaml from 'js-yaml'
 
 import { buildBook, debugBook } from './build-book'
 import { copyFileRecursive } from './files'
+import { ConfigJson } from './build-book/config'
 
 const mkdtemp = promisify(fs.mkdtemp)
 const mkdir = promisify(fs.mkdir)
@@ -17,7 +18,9 @@ const stat = promisify(fs.stat)
 
 test('review is installed?', () => {
   const version = childProcess.execSync('review version').toString()
-  const [major, minor, patch] = version.split('.').map(n => Number.parseInt(n))
+  const [major, minor, patch] = version
+    .split('.')
+    .map(n => Number.parseInt(n))
   expect(major).toBeGreaterThanOrEqual(3)
 })
 
@@ -29,11 +32,11 @@ describe('buildBook test harness', () => {
   beforeEach(async () => {
     tmpDir = await mkdtemp(path.join(os.tmpdir(), 'easybooks-'))
     reviewDir = path.join(tmpDir, '.review')
-    // console.log(tmpDir)
+    console.log(tmpDir)
   })
 
   test('', async () => {
-    const conf = JSON.stringify({
+    const conf: ConfigJson = {
       aut: ['なまえ'],
       texstyle: ['reviewmacro'],
       catalog: { CHAPS: ['hoge.md'] },
@@ -43,12 +46,9 @@ describe('buildBook test harness', () => {
         dir:
           'ReVIEW-Template-2cde584d33e8a6f5e6cf647e62fb6b3123ce4dfa/articles/sty/',
       },
-      review_version: 3.0,
-    })
+      review_version: '3.0',
+    } as any
     const preTasks = [
-      writeFile(path.join(tmpDir, 'test.json'), conf, {
-        encoding: 'utf-8',
-      }),
       writeFile(
         path.join(tmpDir, 'hoge.md'),
         [
@@ -63,7 +63,7 @@ describe('buildBook test harness', () => {
       ),
     ]
     await Promise.all(preTasks)
-    await buildBook(path.join(tmpDir, 'test.json'))
+    await buildBook(conf, tmpDir)
 
     expect(
       yaml.safeLoad(
@@ -79,7 +79,11 @@ describe('buildBook test harness', () => {
           encoding: 'utf-8',
         }),
       ),
-    ).toEqual({ aut: ['なまえ'], texstyle: ['reviewmacro'], review_version: 3 })
+    ).toEqual({
+      aut: ['なまえ'],
+      texstyle: ['reviewmacro'],
+      review_version: '3.0',
+    })
 
     expect(
       readFile(path.join(reviewDir, 'hoge.re'), { encoding: 'utf-8' }).then(
@@ -143,7 +147,7 @@ describe('debugBook test harness', () => {
 
     expect(code).toBe(1)
     expect(data).toMatch(/ERROR: review-pdfmaker: failed to run command: /)
-    console.log(errorHints)
+    // console.log(errorHints)
   })
 })
 
@@ -160,9 +164,11 @@ test('copyFileRecursive', async () => {
   await copyFileRecursive(path.join(tmpDir, 'a'), path.join(tmpDir, 'b'))
 
   expect(
-    await readFile(path.join(tmpDir, 'b', 'hoge.txt'), { encoding: 'utf-8' }),
+    await readFile(path.join(tmpDir, 'b', 'hoge.txt'), {
+      encoding: 'utf-8',
+    }),
   ).toBe('hoge\n')
-  expect(await readFile(path.join(tmpDir, 'b', 'fuga', 'piyo.bin'))).toEqual(
-    Buffer.from([0, 1, 2, 3, 4, 5]),
-  )
+  expect(
+    await readFile(path.join(tmpDir, 'b', 'fuga', 'piyo.bin')),
+  ).toEqual(Buffer.from([0, 1, 2, 3, 4, 5]))
 })
