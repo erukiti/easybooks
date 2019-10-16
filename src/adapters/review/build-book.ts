@@ -14,7 +14,6 @@ import {
   BuildBookPortsFactory,
 } from '../../ports/build-book'
 import { ReviewContext } from '.'
-import { copyFileRecursive } from '../../files'
 import { writeYaml, createCatalog, copyTemplates } from './tasks'
 import { extractTemplates } from '../template-files'
 import { preparingConfig } from './config'

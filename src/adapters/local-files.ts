@@ -4,6 +4,8 @@ import { promisify } from 'util'
 
 import mkdirp from 'mkdirp'
 
+import { FilesPort, FilesPortFactory } from '../ports/files'
+
 const copyFile = promisify(fs.copyFile)
 const readDir = promisify(fs.readdir)
 
@@ -35,7 +37,10 @@ export const readDirRecursive = async (dir: string): Promise<string[]> => {
  * @param srcDir - コピー元ディレクトリ名（相対・絶対指定可）
  * @param destDir - コピー先ディレクトリ名（相対・絶対指定可）
  */
-export const copyFileRecursive = async (srcDir: string, destDir: string) => {
+export const copyFileRecursive = async (
+  srcDir: string,
+  destDir: string,
+) => {
   const s = path.resolve(srcDir)
   const d = path.resolve(destDir)
   const entries = await readDirRecursive(s)
@@ -46,4 +51,18 @@ export const copyFileRecursive = async (srcDir: string, destDir: string) => {
       return copyFile(name, destName)
     }),
   )
+}
+
+export interface LocalFilesContext {
+  dir: string
+}
+
+export const createLocalFilesPort: FilesPortFactory<LocalFilesContext> = ({
+  dir,
+}) => {
+  const writeFiles: FilesPort['writeFiles'] = async dest => {
+    return copyFileRecursive(dir, dest)
+  }
+
+  return { readDirRecursive, writeFiles }
 }

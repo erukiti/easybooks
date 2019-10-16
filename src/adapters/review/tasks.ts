@@ -8,7 +8,7 @@ import vFile from 'vfile'
 import yaml from 'js-yaml'
 
 import { Catalog } from '../../ports/build-book'
-import { copyFileRecursive } from '../../files'
+import { copyFileRecursive } from '../local-files'
 import mdastToReviewPlugin from '../../easybooks-ast/review-stringify'
 import { parseMarkdown, importSource } from '../../easybooks-ast/markdown'
 
