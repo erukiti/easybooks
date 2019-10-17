@@ -11,10 +11,8 @@ export const readConfig = async (
   return JSON.parse(await readFile(configFilename, { encoding: 'utf-8' }))
 }
 
-export const preparingConfig = (config: any) => {
-  const catalog = { ...config.catalog }
-  const templates = [...(config.templates || [])]
-  const sty_templates = { ...config.sty_templates }
+export const preparingConfig = (config: Config) => {
+  const { catalog, templates = [], sty_templates } = config
   delete config.catalog
   delete config.templates
   delete config.sty_templates

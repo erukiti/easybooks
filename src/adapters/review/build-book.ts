@@ -1,15 +1,13 @@
 import childProcess from 'child_process'
-import path from 'path'
-
-import mkdirp from 'mkdirp'
 
 import { ReportMessage, Presentation } from '../../ports/presentation'
 import {
   BuildBookPorts,
   BuildBookPortsFactory,
+  Config,
+  Catalog,
 } from '../../ports/build-book'
 import { ProjectFilesPort } from '../../ports/project-files'
-import { ReviewContext } from '.'
 import { writeYaml, createCatalog, copyTemplates } from './tasks'
 import { extractTemplates } from '../template-files'
 import { preparingConfig } from './config'
@@ -65,24 +63,23 @@ export const buildPdfByReview = (pres: Presentation, reviewDir: string) => {
 }
 
 export const prepareReviewDir = async (
-  config: any,
+  config: Config,
   catalog: any,
   templates: string[],
-  sty_templates: any,
+  sty_templates: { url: string; dir: string } | undefined,
   pres: Presentation,
   files: ProjectFilesPort,
 ) => {
   const { tasks } = createCatalog(files, catalog)
 
-  // 1. まず Re:VIEW sty ファイルを展開しておく
+  // まず Re:VIEW sty ファイルを展開しておく
   // 上書きの都合上、先にやる必要がある
-  if ('url' in sty_templates) {
+  if (sty_templates) {
     const { url, dir } = sty_templates
     pres.info(`style template URL: ${url}/${dir}`)
     await extractTemplates(url, dir, '.review/sty', pres)
   }
 
-  // 大半の書き出しタスクは平行で行える
   await Promise.all([
     writeYaml(files, 'catalog.yml', catalog),
     writeYaml(files, 'config.yml', config),
@@ -90,9 +87,6 @@ export const prepareReviewDir = async (
     copyTemplates(files, templates),
   ])
 }
-
-export const getReviewDir = (projectDir: string) =>
-  path.join(projectDir, '.review')
 
 export const createBuildBookByReviewPort: BuildBookPortsFactory = ({
   pres,

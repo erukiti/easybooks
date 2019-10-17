@@ -1,54 +1,54 @@
 import { preparingConfig } from './config'
 
 describe('prepareConfig', () => {
-  test('none', () => {
-    const conf = {
-      aut: ['なまえ'],
-    }
-
-    const { catalog, templates, sty_templates } = preparingConfig(conf)
-    expect(conf).toEqual({ aut: ['なまえ'] })
-    expect(catalog).toEqual({})
-    expect(templates).toEqual([])
-    expect(sty_templates).toEqual({})
-  })
-
   test('catalog only', () => {
     const conf = {
-      aut: ['なまえ'],
       catalog: { CHAPS: ['hoge.md'] },
     }
 
     const { catalog, templates, sty_templates } = preparingConfig(conf)
-    expect(conf).toEqual({ aut: ['なまえ'] })
+    expect(conf).toEqual({})
     expect(catalog).toEqual({ CHAPS: ['hoge.md'] })
     expect(templates).toEqual([])
-    expect(sty_templates).toEqual({})
+    expect(sty_templates).toBeUndefined()
   })
 
-  test('template only', () => {
+  test('catalog & template', () => {
     const conf = {
-      aut: ['なまえ'],
+      catalog: { CHAPS: ['hoge.md'] },
       templates: ['sty', 'images'],
     }
 
     const { catalog, templates, sty_templates } = preparingConfig(conf)
-    expect(conf).toEqual({ aut: ['なまえ'] })
-    expect(catalog).toEqual({})
+    expect(conf).toEqual({})
+    expect(catalog).toEqual({ CHAPS: ['hoge.md'] })
     expect(templates).toEqual(['sty', 'images'])
-    expect(sty_templates).toEqual({})
+    expect(sty_templates).toBeUndefined()
   })
 
-  test('sty_template only', () => {
+  test('catalog & sty_template', () => {
     const conf = {
-      aut: ['なまえ'],
+      catalog: { CHAPS: ['hoge.md'] },
       sty_templates: { url: 'https://hoge/fuga', dir: 'piyo' },
     }
 
     const { catalog, templates, sty_templates } = preparingConfig(conf)
-    expect(conf).toEqual({ aut: ['なまえ'] })
-    expect(catalog).toEqual({})
+    expect(conf).toEqual({})
+    expect(catalog).toEqual({ CHAPS: ['hoge.md'] })
     expect(templates).toEqual([])
     expect(sty_templates).toEqual({ url: 'https://hoge/fuga', dir: 'piyo' })
+  })
+
+  test('catalog & review settings', () => {
+    const conf = {
+      catalog: { CHAPS: ['hoge.md'] },
+      review_version: '3.0',
+    }
+
+    const { catalog, templates, sty_templates } = preparingConfig(conf)
+    expect(conf).toEqual({ review_version: '3.0' })
+    expect(catalog).toEqual({ CHAPS: ['hoge.md'] })
+    expect(templates).toEqual([])
+    expect(sty_templates).toBeUndefined()
   })
 })

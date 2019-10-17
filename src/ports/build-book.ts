@@ -2,27 +2,6 @@ import { Presentation } from './presentation'
 import { ProjectFilesPort } from './project-files'
 
 export interface ConfigReview {
-  bookname: string
-  booktitle: string
-  language: string
-  aut: string[]
-  review_version: string
-  toc: boolean
-  rights: string
-  colophon: boolean
-  history: string[][]
-  prt: string
-  pbl: string
-  secnolevel: number
-  titlepage: boolean
-  coverimage: string
-  urnid: string
-  pdfmaker: {
-    backcover: string
-    texdocumentclass: string[]
-    texstyle: string
-    texcommand: string
-  }
   [p: string]: any
 }
 
