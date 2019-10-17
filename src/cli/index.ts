@@ -1,6 +1,6 @@
 import path from 'path'
 
-import { buildBook } from '../'
+import { buildBookFromDisk } from '../'
 import { readConfig } from '../adapters/review/config'
 import { Presentation } from '../ports/presentation'
 
@@ -14,7 +14,7 @@ const cli = async (args: any) => {
 
   try {
     const config = await readConfig(args._[0])
-    buildBook(config, path.dirname(args._[0]), pres)
+    buildBookFromDisk(config, path.dirname(args._[0]), pres)
   } catch (e) {
     console.error(e)
   }

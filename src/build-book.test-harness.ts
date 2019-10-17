@@ -6,7 +6,7 @@ import childProcess from 'child_process'
 
 import yaml from 'js-yaml'
 
-import { buildBook } from '.'
+import { buildBookFromDisk } from '.'
 import { Config } from './ports/build-book'
 import { Presentation } from './ports/presentation'
 
@@ -68,7 +68,7 @@ describe('buildBook test harness', () => {
       ),
     ]
     await Promise.all(preTasks)
-    await buildBook(conf, tmpDir, pres)
+    await buildBookFromDisk(conf, tmpDir, pres)
 
     expect(
       yaml.safeLoad(

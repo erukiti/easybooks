@@ -1,18 +1,14 @@
 import childProcess from 'child_process'
-import fs from 'fs'
 import path from 'path'
-import os from 'os'
-import { promisify } from 'util'
 
 import mkdirp from 'mkdirp'
-
-const mkdtemp = promisify(fs.mkdtemp)
 
 import { ReportMessage, Presentation } from '../../ports/presentation'
 import {
   BuildBookPorts,
   BuildBookPortsFactory,
 } from '../../ports/build-book'
+import { ProjectFilesPort } from '../../ports/project-files'
 import { ReviewContext } from '.'
 import { writeYaml, createCatalog, copyTemplates } from './tasks'
 import { extractTemplates } from '../template-files'
@@ -73,13 +69,10 @@ export const prepareReviewDir = async (
   catalog: any,
   templates: string[],
   sty_templates: any,
-  projectDir: string,
   pres: Presentation,
+  files: ProjectFilesPort,
 ) => {
-  process.chdir(projectDir)
-  mkdirp.sync('.review')
-
-  const { tasks } = createCatalog(catalog)
+  const { tasks } = createCatalog(files, catalog)
 
   // 1. まず Re:VIEW sty ファイルを展開しておく
   // 上書きの都合上、先にやる必要がある
@@ -91,21 +84,22 @@ export const prepareReviewDir = async (
 
   // 大半の書き出しタスクは平行で行える
   await Promise.all([
-    writeYaml('.review/catalog.yml', catalog),
-    writeYaml('.review/config.yml', config),
+    writeYaml(files, 'catalog.yml', catalog),
+    writeYaml(files, 'config.yml', config),
     ...tasks,
-    copyTemplates(templates),
+    copyTemplates(files, templates),
   ])
 }
 
 export const getReviewDir = (projectDir: string) =>
   path.join(projectDir, '.review')
 
-export const createBuildBookByReviewPort: BuildBookPortsFactory<
-  ReviewContext
-> = ({ pres }, { projectDir }) => {
+export const createBuildBookByReviewPort: BuildBookPortsFactory = ({
+  pres,
+  files,
+}) => {
   const buildPdf: BuildBookPorts['buildPdf'] = async config => {
-    const reviewDir = getReviewDir(projectDir)
+    const reviewDir = files.getExportPath()
     const { catalog, templates, sty_templates } = preparingConfig(config)
 
     await prepareReviewDir(
@@ -113,8 +107,8 @@ export const createBuildBookByReviewPort: BuildBookPortsFactory<
       catalog,
       templates,
       sty_templates,
-      projectDir,
       pres,
+      files,
     )
     return buildPdfByReview(pres, reviewDir)
   }

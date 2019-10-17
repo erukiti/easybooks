@@ -1,60 +1,55 @@
-import fs from 'fs'
 import path from 'path'
-import { promisify } from 'util'
 
 import unified from 'unified'
-import mkdirp from 'mkdirp'
 import vFile from 'vfile'
 import yaml from 'js-yaml'
 
 import { Catalog } from '../../ports/build-book'
-import { copyFileRecursive } from '../local-files'
 import mdastToReviewPlugin from '../../easybooks-ast/review-stringify'
 import { parseMarkdown, importSource } from '../../easybooks-ast/markdown'
-
-export const toDesination = (filename: string) =>
-  path.join('.review', filename)
-
-const readFile = promisify(fs.readFile)
-const writeFile = promisify(fs.writeFile)
-const copyFile = promisify(fs.copyFile)
+import { ProjectFilesPort } from '../../ports/project-files'
 
 const review = unified().use(mdastToReviewPlugin)
 
-export const convert = async (src: string, dest: string) => {
-  const markdownText = await readFile(src, { encoding: 'utf-8' })
+export const convert = async (
+  files: ProjectFilesPort,
+  src: string,
+  dest: string,
+) => {
+  const markdownText = await files.readFileFromProject(src)
   const root = await parseMarkdown(markdownText)
   await importSource(root)
-  mkdirp.sync(path.dirname(dest))
-  await writeFile(
+  await files.writeFileToDisk(
     dest,
     review.stringify(
       root,
       vFile({ data: path.basename(dest).replace(/\.[a-zA-Z0-9]+$/, '') }),
     ),
-    {
-      encoding: 'utf-8',
-    },
   )
 }
 
-export const writeYaml = async (filename: string, data: any) => {
-  mkdirp.sync(path.dirname(filename))
-  await writeFile(filename, yaml.dump(data))
+export const writeYaml = async (
+  files: ProjectFilesPort,
+  filename: string,
+  data: any,
+) => {
+  await files.writeFileToDisk(filename, yaml.dump(data))
 }
 
-export const createCatalog = (catalog: Catalog) => {
+export const createCatalog = (
+  files: ProjectFilesPort,
+  catalog: Catalog,
+) => {
   const tasks: Promise<any>[] = []
   Object.keys(catalog).map(key => {
     catalog[key] = catalog[key].map(filename => {
       if (filename.endsWith('.md')) {
         const reviewFilename = filename.replace(/\.md$/, '.re')
-        tasks.push(convert(filename, toDesination(reviewFilename)))
+        tasks.push(convert(files, filename, reviewFilename))
         return reviewFilename
       } else {
         const copy = async () => {
-          console.log('copyed:', toDesination(filename))
-          await copyFile(filename, toDesination(filename))
+          await files.exportFileToDisk(filename)
         }
         tasks.push(copy())
         return filename
@@ -65,11 +60,14 @@ export const createCatalog = (catalog: Catalog) => {
   return { catalog, tasks }
 }
 
-export const copyTemplates = async (templates: string[]) => {
+export const copyTemplates = async (
+  files: ProjectFilesPort,
+  templates: string[],
+) => {
   if (templates.length === 0) {
     return
   }
   await Promise.all(
-    templates.map(dir => copyFileRecursive(dir, toDesination(dir))),
+    templates.map(dir => files.exportFilesToDiskRecursive(dir)),
   )
 }

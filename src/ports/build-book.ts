@@ -1,4 +1,5 @@
 import { Presentation } from './presentation'
+import { ProjectFilesPort } from './project-files'
 
 export interface ConfigReview {
   bookname: string
@@ -42,9 +43,7 @@ export interface BuildBookPorts {
   buildPdf: (config: Config) => Promise<void>
 }
 
-export type BuildBookPortsFactory<T = unknown> = (
-  ports: {
-    pres: Presentation
-  },
-  context: T,
-) => BuildBookPorts
+export type BuildBookPortsFactory = (ports: {
+  pres: Presentation
+  files: ProjectFilesPort
+}) => BuildBookPorts
