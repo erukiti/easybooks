@@ -1,5 +1,6 @@
 import { Presentation } from './presentation'
 import { ProjectFilesPort } from './project-files'
+import { FetchTemplatesPort } from './fetch-templates'
 
 export interface ConfigReview {
   [p: string]: any
@@ -25,4 +26,5 @@ export interface BuildBookPorts {
 export type BuildBookPortsFactory = (ports: {
   pres: Presentation
   files: ProjectFilesPort
+  fetchTemplates: FetchTemplatesPort
 }) => BuildBookPorts

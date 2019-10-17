@@ -1,57 +1,76 @@
 import fs from 'fs'
 import path from 'path'
 import { promisify } from 'util'
+import { createHash } from 'crypto'
 
 import fetch from 'node-fetch'
 import JSZip from 'jszip'
 import mkdirp from 'mkdirp'
 
-import { Presentation } from '../ports/presentation'
-
-// FIXME: キャッシュの仕組みを導入する
+import {
+  FetchTemplatesPort,
+  FetchTemplatesPortFactory,
+} from '../ports/fetch-templates'
 
 const writeFile = promisify(fs.writeFile)
+const readFile = promisify(fs.readFile)
 
-const fetchTemplates = async (url: string, dir: string) => {
-  const tasks: Promise<{ text: string; name: string }>[] = []
-  const res = await fetch(url)
-  const zip = new JSZip()
-  const buf = await res.arrayBuffer()
-  await zip.loadAsync(buf)
-  zip.forEach((relPath, file) => {
-    if (!relPath.startsWith(dir) || relPath === dir) {
-      return
-    }
-    tasks.push(
-      new Promise((resolve, reject) => {
-        let text: string = ''
-        const st = file.nodeStream()
-        st.on('data', data => (text += data.toString()))
-        st.on('error', err => reject(err))
-        st.on('end', () =>
-          resolve({ text, name: relPath.slice(dir.length) }),
-        )
-      }),
-    )
-  })
-  return Promise.all(tasks)
+export interface FetchContext {
+  cacheDir: string
 }
 
-export const extractTemplates = async (
-  url: string,
-  dir: string,
-  dest: string,
-  pres: Presentation,
-) => {
-  mkdirp.sync(dest)
-  pres.info(`fetch TeX sty templates from: ${url}`)
-  const files = await fetchTemplates(url, dir)
-  pres.info('fetch done')
-  return Promise.all(
-    files.map(async file => {
-      pres.info(file.name)
-      await writeFile(path.join(dest, file.name), file.text)
-      pres.info(`TeX sty extracted: ${path.join(dest, file.name)}`)
-    }),
-  )
+const getHash = (buf: string | Buffer) => {
+  const sha256 = createHash('sha256')
+  sha256.write(buf)
+  return sha256.digest().toString('hex')
+}
+
+export const createFetchTemplatesPort: FetchTemplatesPortFactory<
+  FetchContext
+> = ({ cacheDir }) => {
+  const fetchTemplates: FetchTemplatesPort['fetch'] = async (
+    url: string,
+    dir: string,
+  ) => {
+    const cacheFilename = path.join(cacheDir, `${getHash(url)}.zip`)
+
+    const tasks: Promise<{ text: string; name: string }>[] = []
+    let buf: ArrayBuffer
+
+    try {
+      buf = new Uint8Array(await readFile(cacheFilename)).buffer
+      console.log('read from cache')
+    } catch (e) {
+      if (e.code !== 'ENOENT') {
+        throw e
+      }
+      console.log('fetch')
+
+      const res = await fetch(url)
+      buf = await res.arrayBuffer()
+      mkdirp.sync(path.dirname(cacheFilename))
+      await writeFile(cacheFilename, Buffer.from(buf))
+    }
+
+    const zip = new JSZip()
+    await zip.loadAsync(buf)
+    zip.forEach((relPath, file) => {
+      if (!relPath.startsWith(dir) || relPath === dir) {
+        return
+      }
+      tasks.push(
+        new Promise((resolve, reject) => {
+          let text: string = ''
+          const st = file.nodeStream()
+          st.on('data', data => (text += data.toString()))
+          st.on('error', err => reject(err))
+          st.on('end', () =>
+            resolve({ text, name: relPath.slice(dir.length) }),
+          )
+        }),
+      )
+    })
+    return Promise.all(tasks)
+  }
+  return { fetch: fetchTemplates }
 }

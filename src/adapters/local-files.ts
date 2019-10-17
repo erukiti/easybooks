@@ -65,33 +65,37 @@ export interface LocalFilesContext {
 export const createLocalFilesPort: ProjectFilesPortFactory<
   LocalFilesContext
 > = context => {
-  const {
-    projectDir,
-    reviewDir = path.join(projectDir, '.review'),
-  } = context!
+  const projectDir = path.resolve(context!.projectDir)
+  const reviewDir =
+    context!.reviewDir || path.resolve(projectDir, '.review')
+
   const toDestination = (relativeName: string) => {
-    return path.join(path.relative(projectDir, reviewDir), relativeName)
+    return path.join(reviewDir, relativeName)
   }
 
-  process.chdir(projectDir) // FIXME: remove
   mkdirp.sync(reviewDir)
   return {
     readProjectDirRecursive,
     readFileFromProject: (filename: string) =>
-      readFile(filename, { encoding: 'utf-8' }),
+      readFile(path.join(projectDir, filename), {
+        encoding: 'utf-8',
+      }),
     writeFileToDisk: (relativeName: string, content: string | Buffer) => {
       const filename = toDestination(relativeName)
       mkdirp.sync(path.dirname(filename))
       return writeFile(filename, content)
     },
     exportFileToDisk: (filename: string) => {
-      console.log(filename, toDestination(filename))
-      return copyFile(filename, toDestination(filename))
+      return copyFile(
+        path.join(projectDir, filename),
+        toDestination(filename),
+      )
     },
     exportFilesToDiskRecursive: (name: string) => {
-      console.log(name, toDestination(name))
-
-      return copyFileRecursive(name, toDestination(name))
+      return copyFileRecursive(
+        path.join(projectDir, name),
+        toDestination(name),
+      )
     },
     getExportPath: () => reviewDir,
   }
