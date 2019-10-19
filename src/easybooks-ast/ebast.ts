@@ -58,6 +58,12 @@ export interface ListItem extends Parent {
   children: BlockContent[]
 }
 
+export interface Div extends Parent {
+  type: 'div'
+  className?: string
+  children: BlockContent[]
+}
+
 export interface Table extends Parent {
   type: 'table'
   align: Array<'left' | 'right' | 'center' | null>
@@ -203,6 +209,7 @@ export type BlockContent =
   | Table
   | HTML
   | Code
+  | Div
 
 export type FrontmatterContent = YAML
 export type DefinitionContent = Definition | FootnoteDefinition

@@ -173,6 +173,10 @@ const tableCell = (tree: EBAST.TableCell, context: Context) => {
   return tree.children.map(child => compiler(child, context)).join('')
 }
 
+const div = (tree: EBAST.Div, context: Context) => {
+  return `//${tree.className} {\n${tree.value}\n//}\n`
+}
+
 const compilers = {
   root,
   paragraph,
@@ -196,6 +200,7 @@ const compilers = {
   tableRow,
   tableCell,
   comment,
+  div,
 }
 
 export const compiler = (tree: EBAST.Node, context: Context): string => {

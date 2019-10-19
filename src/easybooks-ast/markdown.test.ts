@@ -40,7 +40,9 @@ describe('parseMarkdown', () => {
 
   test('code', () => {
     expect(
-      parse(['```js {id=1 caption=hoge}', 'console.log(1)', '```'].join('\n')),
+      parse(
+        ['```js {id=1 caption=hoge}', 'console.log(1)', '```'].join('\n'),
+      ),
     ).resolves.toEqual(
       expect.objectContaining({
         type: 'code',
@@ -77,9 +79,13 @@ describe('parseMarkdown', () => {
   test('table caption', () => {
     expect(
       parse(
-        [, '|hoge|fuga|', '|----|----|', '|ほげ|ふが|', '|caption=hoge|'].join(
-          '\n',
-        ),
+        [
+          ,
+          '|hoge|fuga|',
+          '|----|----|',
+          '|ほげ|ふが|',
+          '|caption=hoge|',
+        ].join('\n'),
       ),
     ).resolves.toEqual(
       expect.objectContaining({
@@ -101,7 +107,39 @@ describe('parseMarkdown', () => {
         ].join('\n'),
       ),
     ).resolves.toEqual(
-      expect.objectContaining({ type: 'table', caption: 'hoge', id: 'fuga' }),
+      expect.objectContaining({
+        type: 'table',
+        caption: 'hoge',
+        id: 'fuga',
+      }),
+    )
+  })
+
+  test('html comment', () => {
+    expect(parse('<!-- ほげ -->')).resolves.toEqual(
+      expect.objectContaining({ type: 'comment', value: 'ほげ' }),
+    )
+  })
+
+  test('div class', () => {
+    expect(parse('<div class="flushright">ほげ</div>')).resolves.toEqual(
+      expect.objectContaining({
+        type: 'div',
+        value: 'ほげ',
+        className: 'flushright',
+      }),
+    )
+  })
+
+  test('div className', () => {
+    expect(
+      parse('<div className="flushright">ほげ</div>'),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        type: 'div',
+        value: 'ほげ',
+        className: 'flushright',
+      }),
     )
   })
 })

@@ -57,22 +57,35 @@ const enterHeading = (node: MDAST.Heading & EBAST.Heading) => {
         return child
       }
     })
-    .filter(child => child) as MDAST.PhrasingContent[] & EBAST.PhrasingContent[]
+    .filter(child => child) as MDAST.PhrasingContent[] &
+    EBAST.PhrasingContent[]
   node.children = children
 }
 
+const reDiv = /^<div\s+class(?:Name)?="([^"]+)">(.+)<\/div>$/
+
 const enterHtml = (node: MDAST.HTML & EBAST.Comment) => {
-  if (!node.value.trim().startsWith('<!--')) {
-    throw new Error(`unsupported HTML.\n${node.value}`)
+  const html = node.value.trim()
+  if (html.startsWith('<!--')) {
+    const value = node.value
+      .trim()
+      .replace(/^<!--/, '')
+      .replace(/-->$/, '')
+      .trim()
+    ;(node as EBAST.Comment).type = 'comment'
+    node.value = value
+    return
   }
 
-  const value = node.value
-    .trim()
-    .replace(/^<!--/, '')
-    .replace(/-->$/, '')
-    .trim()
-  ;(node as EBAST.Comment).type = 'comment'
-  node.value = value
+  const matched = reDiv.exec(html)
+  if (matched) {
+    ;((node as any) as EBAST.Div).type = 'div'
+    node.className = matched[1]
+    node.value = matched[2]
+    return
+  }
+
+  throw new Error(`unsupported HTML.\n${node.value}`)
 }
 
 const enterTable = (node: MDAST.Table & EBAST.Table) => {
@@ -84,7 +97,9 @@ const enterTable = (node: MDAST.Table & EBAST.Table) => {
       row.children[0].children.length === 1 &&
       row.children[0].children[0].type === 'text'
     ) {
-      const { caption, id } = parseKeyValue(row.children[0].children[0].value)
+      const { caption, id } = parseKeyValue(
+        row.children[0].children[0].value,
+      )
       node.caption = caption
       node.id = id
       node.children.pop() // remove last element
