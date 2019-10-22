@@ -174,7 +174,7 @@ const tableCell = (tree: EBAST.TableCell, context: Context) => {
 }
 
 const div = (tree: EBAST.Div, context: Context) => {
-  return `//${tree.className} {\n${tree.value}\n//}\n`
+  return `//${tree.className}{\n${tree.value}\n//}\n`
 }
 
 const compilers = {

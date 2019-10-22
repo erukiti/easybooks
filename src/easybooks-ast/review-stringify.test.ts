@@ -194,7 +194,7 @@ describe('comment', () => {
 describe('div', () => {
   test('div className => re:view block', () => {
     expect(mdToReview('<div class="flushright">ほげ</div>')).resolves.toBe(
-      ['//flushright {', 'ほげ', '//}', ''].join('\n'),
+      ['//flushright{', 'ほげ', '//}', ''].join('\n'),
     )
   })
 })
