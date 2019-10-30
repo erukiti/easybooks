@@ -1,5 +1,5 @@
 import unified from 'unified'
-import reviewParserPlugin from './review-parser'
+import reviewParserPlugin, { parseLine } from './review-parser'
 
 const review = unified().use(reviewParserPlugin)
 const parse = (lines: string[]) => review.parse(lines.join('\n')).children
@@ -9,7 +9,7 @@ describe('heading', () => {
     expect(parse(['= hoge'])).toEqual([
       {
         type: 'heading',
-        depth: '1',
+        depth: 1,
         children: [{ type: 'text', value: 'hoge' }],
         options: [],
       },
@@ -20,7 +20,7 @@ describe('heading', () => {
     expect(parse(['====[column] hoge'])).toEqual([
       {
         type: 'heading',
-        depth: '4',
+        depth: 4,
         children: [{ type: 'text', value: 'hoge' }],
         options: ['column'],
       },
@@ -31,7 +31,7 @@ describe('heading', () => {
     expect(parse(['=[column,notoc] hoge'])).toEqual([
       {
         type: 'heading',
-        depth: '1',
+        depth: 1,
         children: [{ type: 'text', value: 'hoge' }],
         options: ['column', 'notoc'],
       },
@@ -42,7 +42,7 @@ describe('heading', () => {
     expect(parse(['={ref} hoge'])).toEqual([
       {
         type: 'heading',
-        depth: '1',
+        depth: 1,
         children: [{ type: 'text', value: 'hoge' }],
         options: [],
         reference: 'ref',
@@ -54,7 +54,7 @@ describe('heading', () => {
     expect(parse(['=[column]{ref} hoge'])).toEqual([
       {
         type: 'heading',
-        depth: '1',
+        depth: 1,
         children: [{ type: 'text', value: 'hoge' }],
         options: ['column'],
         reference: 'ref',
@@ -85,5 +85,61 @@ describe('list', () => {
         meta: 'id="id" description="コメント"',
       },
     ])
+  })
+})
+
+describe('parse2', () => {
+  // test('#@', () => { })
+  test('heading', () => {
+    // /\A=+[\[\s\{]/
+    expect(parseLine('= hoge')).toEqual({
+      type: 'heading',
+      depth: 1,
+      _caption: 'hoge'
+    })
+    expect(parseLine('=[hoge] fuga')).toEqual({
+      type: 'heading',
+      depth: 1,
+      _tag: 'hoge',
+      _caption: 'fuga'
+    })
+    expect(parseLine('={hoge} fuga')).toEqual({
+      type: 'heading',
+      depth: 1,
+      _label: 'hoge',
+      _caption: 'fuga'
+    })
+  })
+
+  test('ul', () => {
+    // /\A\s+\*/
+    expect(parseLine('       * hoge')).toEqual({
+      type: 'list',
+      _depth: 1,
+      _content: 'hoge'
+    })
+  })
+
+  test('ol', () => {
+    // /\A\s+\d+\./
+    expect(parseLine(' 1. hoge')).toEqual({
+      type: 'list',
+      ordered: true,
+      _number: 1,
+      content: 'hoge'
+    })
+  })
+
+  test('block end', () => {
+    // %r{\A//\}}
+    expect(parseLine('//}')).toEqual({type: '_blockend'})
+  })
+
+  test('block command', () => {
+    // %r{\A//[a-z]+}
+    expect(parseLine('//hoge')).toEqual({
+      type: '_blockopen',
+      command: 'hoge'
+    })
   })
 })

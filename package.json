@@ -8,7 +8,9 @@
     "test": "jest",
     "test:long": "jest --config jest-longtest.config.js",
     "test:watch": "jest --watchAll",
-    "test:long:watch": "jest --config jest-longtest.config.js --watchAll"
+    "test:long:watch": "jest --config jest-longtest.config.js --watchAll",
+    "test:anti-corruption": "jest --config jest-anti-corruption.config.js",
+    "test:anti-corruption:watch": "jest --config jest-anti-corruption.config.js --watchAll"
   },
   "repository": "erukiti/easybooks",
   "bin": {

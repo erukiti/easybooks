@@ -2,7 +2,8 @@ import * as EBAST from './ebast'
 
 const reHeading = /^(={1,6})(\[[^]+\])?(\{[^}]+\})?\s+([^\n]+)$/
 const reStartBlock = /^\/\/([^[]+)(?:\[([^\]]*)\])?(?:\[([^\]]*)\])?(?:\[([^\]]*)\])?\s*\{\s*$/
-const reEndBlock = /^\/\/\s*\}\s*$/
+const reEndBlock = /^\/\/\}\s*$/
+const reInline = /@<(.+)>{(.+)}/
 
 type ParseStateBlock = {
   state: 'block'
@@ -60,7 +61,74 @@ const createContent = (state: ParseState): EBAST.Content => {
     case 'block':
       return createBlock(state.type, state.lines.join('\n'), state.meta)
     case 'paragraph':
-      return { type: 'paragraph', children: parseText(state.lines.join('\n')) }
+      return {
+        type: 'paragraph',
+        children: parseText(state.lines.join('\n')),
+      }
+  }
+}
+
+interface LineMatcher {
+  re: RegExp
+  matching: (matched: RegExpExecArray) => any
+}
+
+const lineMatchers: LineMatcher[] = [
+  {
+    re: /(=+)(?:\[(.+?)\])?(?:\{(.+?)\})?(.*)/,
+    matching: matched => ({
+      type: 'heading',
+      depth: matched[1].length,
+      _tag: matched[2],
+      _label: matched[3],
+      _caption: matched[4].trim(),
+    }),
+  },
+  {
+    re: /\s+(\*+)(.+)/,
+    matching: matched => ({
+      type: 'list',
+      _depth: matched[1].length,
+      _content: matched[2].trim(),
+    }),
+  },
+  {
+    re: /\s+(\d+)\.(.+)/,
+    matching: matched => ({
+      type: 'list',
+      ordered: true,
+      _number: Number.parseInt(matched[1]),
+      content: matched[2].trim(),
+    }),
+  },
+  // FIXME dl
+  {
+    re: /\/\/\}/,
+    matching: () => ({
+      type: '_blockend',
+    }),
+  },
+  {
+    re: /^\/\/([a-z]+)/,
+    matching: matched => ({
+      type: '_blockopen',
+      command: matched[1],
+    }),
+  },
+]
+
+export const parseLine = (line: string) => {
+  for (const matcher of lineMatchers) {
+    const {re, matching} = matcher
+    const matched = re.exec(line)
+    if (!matched) {
+      continue
+    }
+    return matching(matched)
+  }
+  return {
+    type: 'paragraph',
+    value: line
   }
 }
 
@@ -74,7 +142,10 @@ const parse = (s: string): EBAST.Content[] => {
   const contents: EBAST.Content[] = []
 
   const addContent = () => {
-    if (state.state === 'paragraph' && state.lines.join('\n').trim() === '') {
+    if (
+      state.state === 'paragraph' &&
+      state.lines.join('\n').trim() === ''
+    ) {
       return
     }
 
@@ -110,7 +181,7 @@ const parse = (s: string): EBAST.Content[] => {
 
           contents.push({
             type: 'heading',
-            depth: matched[1].length.toString() as any,
+            depth: matched[1].length,
             children,
             options,
             reference,
