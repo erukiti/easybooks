@@ -3,11 +3,19 @@ import unified from 'unified'
 import importPlugin from './import-source'
 import * as EBAST from './ebast'
 
-const importSource = unified().use(importPlugin)
+const importSource = unified().use(importPlugin, {
+  importerPort: {
+    fetchText: async url => {
+      return [
+        `import * as childProcess from 'child_process'`,
+        `import * as fs from 'fs'`,
+        `import * as path from 'path'`,
+      ].join('\n')
+    },
+  },
+})
 
-// FIXME: fetch を mockで
-
-test('', async () => {
+test('importSource Plugin', async () => {
   const root: EBAST.Root = {
     type: 'root',
     children: [
@@ -28,9 +36,10 @@ test('', async () => {
   expect(root.children[0]).toEqual(
     expect.objectContaining({
       type: 'code',
-      value: [`import * as fs from 'fs'`, `import * as path from 'path'`].join(
-        '\n',
-      ),
+      value: [
+        `import * as fs from 'fs'`,
+        `import * as path from 'path'`,
+      ].join('\n'),
     }),
   )
 })

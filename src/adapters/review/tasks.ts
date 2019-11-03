@@ -4,12 +4,22 @@ import unified from 'unified'
 import vFile from 'vfile'
 import yaml from 'js-yaml'
 
+import fetch from 'node-fetch'
+
 import { Catalog } from '../../ports/build-book'
 import mdastToReviewPlugin from '../../easybooks-ast/review-stringify'
-import { parseMarkdown, importSource } from '../../easybooks-ast/markdown'
+import { parseMarkdown, createImporter } from '../../easybooks-ast/markdown'
 import { ProjectFilesPort } from '../../ports/project-files'
 
 const review = unified().use(mdastToReviewPlugin)
+const { importSource } = createImporter({
+  importer: {
+    fetchText: async url => {
+      const res = await fetch(url)
+      return res.text()
+    },
+  },
+})
 
 export const convert = async (
   files: ProjectFilesPort,
