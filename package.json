@@ -1,6 +1,6 @@
 {
   "name": "easybooks",
-  "version": "0.1.25",
+  "version": "0.1.27",
   "author": "SASAKI Shunsuke <erukiti@gmail.com>",
   "license": "MIT",
   "scripts": {
@@ -17,40 +17,40 @@
     "easybooks": "bin/easybooks"
   },
   "main": "dist/index.js",
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "dependencies": {
-    "arg": "^4.1.1",
+    "arg": "^4.1.2",
     "js-yaml": "3.13.1",
     "jszip": "^3.2.2",
     "mkdirp": "^0.5.1",
     "node-fetch": "^2.6.0",
-    "prettier": "1.18.2",
+    "prettier": "1.19.1",
     "remark-breaks": "1.0.3",
     "remark-frontmatter": "1.3.2",
-    "remark-highlight.js": "5.1.1",
+    "remark-highlight.js": "5.2.0",
     "remark-html": "10.0.0",
     "remark-html-katex": "2.0.0",
     "remark-math": "2.0.0",
-    "remark-parse": "7.0.1",
-    "remark-stringify": "7.0.3",
-    "source-map-support": "^0.5.13",
-    "unified": "8.4.1"
+    "remark-parse": "7.0.2",
+    "remark-stringify": "7.0.4",
+    "source-map-support": "^0.5.16",
+    "unified": "8.4.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.4",
-    "@babel/preset-env": "^7.6.3",
-    "@babel/preset-typescript": "^7.6.0",
-    "@types/jest": "^24.0.19",
+    "@babel/core": "^7.7.7",
+    "@babel/preset-env": "^7.7.7",
+    "@babel/preset-typescript": "^7.7.7",
+    "@types/jest": "^24.0.25",
     "@types/js-yaml": "3.12.1",
     "@types/jszip": "^3.1.6",
     "@types/mdast": "^3.0.3",
     "@types/mkdirp": "^0.5.2",
-    "@types/node": "^12.11.1",
-    "@types/node-fetch": "^2.5.2",
+    "@types/node": "^13.1.4",
+    "@types/node-fetch": "^2.5.4",
     "@types/unist": "2.0.3",
     "babel-jest": "^24.9.0",
     "jest": "24.9.0",
-    "typescript": "3.6.4"
+    "typescript": "3.7.4"
   },
   "babel": {
     "presets": [

@@ -1,3 +1,5 @@
+import path from 'path'
+
 import * as EBAST from './ebast'
 
 interface Context {
@@ -127,10 +129,21 @@ const comment = (tree: EBAST.Comment, context: Context) => {
 }
 
 const image = (tree: EBAST.Image, context: Context) => {
-  const url = tree.url
-    .replace(/^images\//, '')
-    .replace(/\.[a-zA-Z0-9]$/, '')
-  return `//image[${url}][${tree.alt}]\n`
+  const matched = /^[^?]+\?(scale=[0-9.]+)$/.exec(tree.url)
+
+  console.log(tree.url)
+  const url = path.basename(
+    tree.url
+      .replace(/\?(scale=[0-9.]+)$/, '')
+      .replace(/\.[a-zA-Z0-9]+$/, ''),
+  )
+  console.log(url)
+
+  if (matched) {
+    return `//image[${url}][${tree.alt}][${matched[1]}]`
+  } else {
+    return `//image[${url}][${tree.alt}]`
+  }
 }
 
 const TableAlign = {

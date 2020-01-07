@@ -1,5 +1,3 @@
-import fetch from 'node-fetch'
-
 import * as EBAST from './ebast'
 import { traverse } from './utils'
 import { ImporterPort } from '../ports/importer'

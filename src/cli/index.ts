@@ -1,7 +1,6 @@
 import path from 'path'
 
-import { buildBookFromDisk } from '../'
-import { readConfig } from '../adapters/review/config'
+import { createEasyBooksBuilderLocal, readConfig } from '../services'
 import { Presentation } from '../ports/presentation'
 
 const cli = async (args: any) => {
@@ -14,7 +13,12 @@ const cli = async (args: any) => {
 
   try {
     const config = await readConfig(args._[0])
-    buildBookFromDisk(config, path.dirname(args._[0]), pres)
+    const { buildPdf } = await createEasyBooksBuilderLocal(
+      config,
+      path.dirname(args._[0]),
+      pres,
+    )
+    await buildPdf()
   } catch (e) {
     console.error(e)
   }

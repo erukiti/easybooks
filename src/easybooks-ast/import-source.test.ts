@@ -5,7 +5,7 @@ import * as EBAST from './ebast'
 
 const importSource = unified().use(importPlugin, {
   importerPort: {
-    fetchText: async url => {
+    fetchText: async () => {
       return [
         `import * as childProcess from 'child_process'`,
         `import * as fs from 'fs'`,
