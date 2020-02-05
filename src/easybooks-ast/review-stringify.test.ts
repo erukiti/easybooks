@@ -132,6 +132,19 @@ describe('strong', () => {
   })
 })
 
+describe('image', () => {
+  test('', () => {
+    expect(mdToReview('![fuga](hoge.png)')).resolves.toBe(
+      '\n//image[hoge.png][fuga]\n\n',
+    )
+  })
+  test('no alt', () => {
+    expect(mdToReview('![](piyo.png)')).resolves.toBe(
+      '\n//image[piyo.png]\n\n',
+    )
+  })
+})
+
 describe('table', () => {
   test('GFM table', () => {
     expect(

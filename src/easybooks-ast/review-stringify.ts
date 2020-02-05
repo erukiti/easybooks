@@ -130,7 +130,7 @@ const image = (tree: EBAST.Image, context: Context) => {
   const url = tree.url
     .replace(/^images\//, '')
     .replace(/\.[a-zA-Z0-9]$/, '')
-  return `//image[${url}][${tree.alt}]\n`
+  return `//image[${url}]${ tree.alt ? `[${tree.alt}]` : ''}\n`
 }
 
 const TableAlign = {
