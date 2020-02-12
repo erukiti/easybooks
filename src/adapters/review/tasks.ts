@@ -55,7 +55,13 @@ export const createCatalog = (
       if (typeof filename !== 'string') {
         const namedEntry: { [key: string]: any[]; } = {}
         for (const key of Object.keys(filename)) {
-          namedEntry[key] = filename[key].map(processEntry)
+          if (key.endsWith('.md')) {
+            const reviewFilename = key.replace(/\.md$/, '.re')
+            tasks.push(convert(files, key, reviewFilename))
+            namedEntry[reviewFilename] = filename[key].map(processEntry)
+          } else {
+            namedEntry[key] = filename[key].map(processEntry)
+          }
         }
         return namedEntry
       } else if (filename.endsWith('.md')) {
