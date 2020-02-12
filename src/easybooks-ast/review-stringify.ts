@@ -129,7 +129,7 @@ const comment = (tree: EBAST.Comment, context: Context) => {
 const image = (tree: EBAST.Image, context: Context) => {
   const url = tree.url
     .replace(/^images\//, '')
-    .replace(/\.[a-zA-Z0-9]$/, '')
+    .replace(/\.[a-zA-Z0-9]+$/, '')
   return `//image[${url}]${ tree.alt ? `[${tree.alt}]` : ''}\n`
 }
 
