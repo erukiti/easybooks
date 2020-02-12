@@ -51,4 +51,16 @@ describe('prepareConfig', () => {
     expect(templates).toEqual([])
     expect(sty_templates).toBeUndefined()
   })
+
+  test('nested catalog', () => {
+    const conf = {
+      catalog: { CHAPS: ['0.md', {'sec1': ['1-1.md', '1-2.md']}, {'sec2': ['2-1.md', '2-2.md']}] },
+    }
+
+    const { catalog, templates, sty_templates } = preparingConfig(conf)
+    expect(conf).toEqual({})
+    expect(catalog).toEqual({ CHAPS: ['0.md', {'sec1': ['1-1.md', '1-2.md']}, {'sec2': ['2-1.md', '2-2.md']}] })
+    expect(templates).toEqual([])
+    expect(sty_templates).toBeUndefined()
+  })
 })
