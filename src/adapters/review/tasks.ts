@@ -51,9 +51,14 @@ export const createCatalog = (
   catalog: Catalog,
 ) => {
   const tasks: Promise<any>[] = []
-  Object.keys(catalog).map(key => {
-    catalog[key] = catalog[key].map(filename => {
-      if (filename.endsWith('.md')) {
+  const processEntry = (filename: any) => {
+      if (typeof filename !== 'string') {
+        const namedEntry: { [key: string]: any[]; } = {}
+        for (const key of Object.keys(filename)) {
+          namedEntry[key] = filename[key].map(processEntry)
+        }
+        return namedEntry
+      } else if (filename.endsWith('.md')) {
         const reviewFilename = filename.replace(/\.md$/, '.re')
         tasks.push(convert(files, filename, reviewFilename))
         return reviewFilename
@@ -64,7 +69,9 @@ export const createCatalog = (
         tasks.push(copy())
         return filename
       }
-    })
+    }
+  Object.keys(catalog).map(key => {
+    catalog[key] = catalog[key].map(processEntry)
   })
 
   return { catalog, tasks }
