@@ -73,8 +73,8 @@ const list = (tree: EBAST.List, context: Context) => {
       .map(child => compiler(child, { ...context, list: context.list + 1 }))
       .join('') + '\n'
   if (tree.ordered) {
-    let count = 1
-    return list.replace(/^ \* /gm, matched => ' ' + (count++) + '. ')
+    let count = Number(tree.start)
+    return list.replace(/^ \* /gm, () => ' ' + (count++) + '. ')
   }
   return list
 }

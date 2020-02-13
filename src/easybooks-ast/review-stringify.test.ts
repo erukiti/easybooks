@@ -81,6 +81,7 @@ describe('list', () => {
 describe('ordered list', () => {
   test('', async () => {
     expect(await mdToReview('1. hoge\n2. fuga')).toBe(' 1. hoge\n 2. fuga\n\n')
+    expect(await mdToReview('3. hoge\n4. fuga')).toBe(' 3. hoge\n 4. fuga\n\n')
   })
 })
 
