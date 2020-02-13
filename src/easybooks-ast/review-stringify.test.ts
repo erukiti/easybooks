@@ -78,6 +78,12 @@ describe('list', () => {
   })
 })
 
+describe('ordered list', () => {
+  test('', async () => {
+    expect(await mdToReview('1. hoge\n2. fuga')).toBe('1. hoge\n2. fuga\n\n')
+  })
+})
+
 describe('thematic break', () => {
   test('', () => {
     expect(mdToReview('---\n')).resolves.toBe('')

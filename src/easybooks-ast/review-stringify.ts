@@ -69,11 +69,14 @@ const linkReference = (tree: EBAST.LinkReference, context: Context) => {
 }
 
 const list = (tree: EBAST.List, context: Context) => {
-  return (
-    tree.children
+  const list = tree.children
       .map(child => compiler(child, { ...context, list: context.list + 1 }))
       .join('') + '\n'
-  )
+  if (tree.ordered) {
+    let count = 1
+    return list.replace(/^ \* /gm, matched => (count++) + '. ')
+  }
+  return list
 }
 
 const listItem = (tree: EBAST.ListItem, context: Context) => {
