@@ -181,7 +181,7 @@ describe('table', () => {
       ),
     ).resolves.toBe(
       [
-        '//tsize[|latex||p{20mm}l|p{30mm}l|p{50mm}l|]',
+        '//tsize[|latex||p{20mm}|p{30mm}|p{50mm}|]',
         '//table[-000][]{',
         'title1\ttitle2\ttitle3',
         '--------------------------',

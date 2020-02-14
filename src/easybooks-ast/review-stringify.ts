@@ -138,6 +138,11 @@ const TableAlign = {
   center: 'c',
   right: 'r',
 }
+const TableAlignWithWidth = {
+  left: 'p',
+  center: 'm',
+  right: 'b',
+}
 
 const table = (tree: EBAST.Table, context: Context) => {
   const colWidthes: string[] = []
@@ -161,8 +166,12 @@ const table = (tree: EBAST.Table, context: Context) => {
     lines.push(
       `//tsize[|latex||${tree.align
         .map((align, index) => {
-          const width = colWidthes[index] ? `p{${colWidthes[index]}mm}` : ''
-          return `${width}${TableAlign[align || 'left']}`
+          const width = colWidthes[index]
+          if (width) {
+            return `${TableAlignWithWidth[align || 'left']}{${width}mm}`
+          } else {
+            return TableAlign[align || 'left']
+          }
         })
         .join('|')}|]`,
     )
