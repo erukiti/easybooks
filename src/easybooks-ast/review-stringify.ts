@@ -150,11 +150,15 @@ const table = (tree: EBAST.Table, context: Context) => {
     let row = compiler(child, context)
     if (index == 0) {
       row = row.split('\t').map(column => {
-        const content = column.replace(/^(\s*)@([0-9]+):\s*/, '$1')
-        if (RegExp.$2) {
-          colWidthes.push(RegExp.$2)
+        const matcher = /^(\s*)@([0-9]+):\s*/
+        const colWidthMatched = column.match(matcher)
+        if (colWidthMatched) {
+          const content = column.replace(matcher, '$1')
+          colWidthes.push(colWidthMatched[2])
+          return content
+        } else {
+          return column
         }
-        return content
       }).join('\t')
     }
     return row
