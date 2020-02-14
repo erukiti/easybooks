@@ -140,18 +140,34 @@ const TableAlign = {
 }
 
 const table = (tree: EBAST.Table, context: Context) => {
-  const [header, ...rows] = tree.children.map(child =>
-    compiler(child, context),
-  )
+  const colWidthes: string[] = []
+  const [header, ...rows] = tree.children.map((child, index) => {
+    let row = compiler(child, context)
+    if (index == 0) {
+      row = row.split('\t').map(column => {
+        const content = column.replace(/^(\s*)@([0-9]+):\s*/, '$1')
+        if (RegExp.$2) {
+          colWidthes.push(RegExp.$2)
+        }
+        return content
+      }).join('\t')
+    }
+    return row
+  })
 
   const lines: string[] = []
 
   if (tree.align) {
     lines.push(
       `//tsize[|latex||${tree.align
-        .map(align => TableAlign[align || 'left'])
+        .map((align, index) => {
+          const width = colWidthes[index] ? `p{${colWidthes[index]}mm}` : ''
+          return `${width}${TableAlign[align || 'left']}`
+        })
         .join('|')}|]`,
     )
+  } else if (colWidthes.length > 0) {
+    lines.push(`//tsize[${colWidthes.join(',')}]`)
   }
 
   // FIXME: caption!!!!
