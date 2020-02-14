@@ -26,10 +26,11 @@ export const parseMeta = (meta: string): { [props: string]: string } => {
 }
 
 const enterCode = (node: MDAST.Code & EBAST.Code) => {
-  const { id, caption, src, filename } = parseMeta(node.meta || '')
+  const { id, caption, src, filename, num } = parseMeta(node.meta || '')
   node.id = id
   node.caption = caption
   node.filename = filename
+  node.num = num === undefined ? true : num.toLowerCase() == 'true'
 
   if (src) {
     const [url, lines] = src.split('#')
