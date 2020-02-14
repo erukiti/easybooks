@@ -4,6 +4,8 @@ interface Context {
   list: number
   id: number
   chapter: string
+  index?: number
+  ordered?: boolean
 }
 
 const getId = (context: Context) => {
@@ -74,7 +76,7 @@ const list = (tree: EBAST.List, context: Context) => {
       .map((child, index) => compiler(child, {
         ...context,
         list:    context.list + 1,
-        ordered: tree.ordered,
+        ordered: tree.ordered || false,
         index:   index + 1
       }))
       .join('') + '\n'
