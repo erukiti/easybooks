@@ -1,3 +1,5 @@
+import { Presentation } from './presentation'
+
 export interface FetchTemplatesPort {
   fetch: (
     url: string,
@@ -7,4 +9,5 @@ export interface FetchTemplatesPort {
 
 export type FetchTemplatesPortFactory<T = unknown> = (
   context: T,
+  pres: Presentation,
 ) => FetchTemplatesPort

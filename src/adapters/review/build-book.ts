@@ -5,9 +5,7 @@ import { ReportMessage, Presentation } from '../../ports/presentation'
 import {
   BuildBookPorts,
   BuildBookPortsFactory,
-  Config,
 } from '../../ports/build-book'
-import { ProjectFilesPort } from '../../ports/project-files'
 import { writeYaml, createCatalog, copyTemplates } from './tasks'
 import { preparingConfig } from './config'
 
@@ -44,6 +42,7 @@ export const buildPdfByReview = (pres: Presentation, reviewDir: string) => {
         reports.forEach(report => pres.error(report))
 
         if (reports.length === 0) {
+          pres.progress('done')
           resolve()
         } else {
           reject(data)

@@ -24,18 +24,21 @@ export const createEasyBooksBuilder = (
     fetchTemplates,
   })
   return {
-    buildPdf: () => builder.buildPdf(config)
+    buildPdf: () => builder.buildPdf(config),
   }
 }
 
 export const createEasyBooksBuilderLocal = async (
   config: Config,
   projectDir: string,
-  pres: Presentation
+  pres: Presentation,
 ) => {
-  const fetchTemplates = createFetchTemplatesPort({
-    cacheDir: path.join(os.homedir(), 'easybooks', 'cache'),
-  })
+  const fetchTemplates = createFetchTemplatesPort(
+    {
+      cacheDir: path.join(os.homedir(), 'easybooks', 'cache'),
+    },
+    pres,
+  )
   const files = createLocalFilesPort({ projectDir })
   const builder = createBuildBookByReviewPort({
     pres,
@@ -43,7 +46,7 @@ export const createEasyBooksBuilderLocal = async (
     fetchTemplates,
   })
   return {
-    buildPdf: () => builder.buildPdf(config)
+    buildPdf: () => builder.buildPdf(config),
   }
 }
 

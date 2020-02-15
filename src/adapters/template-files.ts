@@ -27,7 +27,7 @@ const getHash = (buf: string | Buffer) => {
 
 export const createFetchTemplatesPort: FetchTemplatesPortFactory<
   FetchContext
-> = ({ cacheDir }) => {
+> = ({ cacheDir }, pres) => {
   const fetchTemplates: FetchTemplatesPort['fetch'] = async (
     url: string,
     dir: string,
@@ -39,12 +39,12 @@ export const createFetchTemplatesPort: FetchTemplatesPortFactory<
 
     try {
       buf = new Uint8Array(await readFile(cacheFilename)).buffer
-      console.log('read from cache')
+      pres.info(`read templates from cache`)
     } catch (e) {
       if (e.code !== 'ENOENT') {
         throw e
       }
-      console.log('fetch')
+      pres.info(`fetch templates`)
 
       const res = await fetch(url)
       buf = await res.arrayBuffer()

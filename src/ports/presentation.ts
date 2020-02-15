@@ -3,6 +3,7 @@ export type ProgressState =
   | 'PrepareReVIEWFiles'
   | 'ReVIEWCompile'
   | 'done'
+  | 'failed'
 
 export interface ReportMessage {
   file: string
