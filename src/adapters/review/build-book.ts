@@ -9,7 +9,9 @@ import {
 import { writeYaml, createCatalog, copyTemplates } from './tasks'
 import { preparingConfig } from './config'
 
-import { parseReviewMessage } from './parse-message'
+import { parseReviewMessage, parseTeXMessage } from './parse-message'
+
+const reReVIEWError = /^ERROR: review-[a-z]+: failed to run command/m
 
 export const buildPdfByReview = (pres: Presentation, reviewDir: string) => {
   return new Promise<void>((resolve, reject) => {
@@ -20,14 +22,22 @@ export const buildPdfByReview = (pres: Presentation, reviewDir: string) => {
         cwd: reviewDir,
       })
       .on('close', code => {
-        const reports = parseReviewMessage(data)
-        reports.forEach(report => pres.error(report))
+        const texReport = parseTeXMessage(data)
+        texReport.forEach(report => pres.error(report))
 
-        if (reports.length === 0) {
-          pres.progress('done')
-          resolve()
+        if (reReVIEWError.test(data)) {
+          pres.progress('failed')
+          reject('\n\n\n' + data)
         } else {
-          reject(data)
+          const reports = parseReviewMessage(data)
+          reports.forEach(report => pres.error(report))
+
+          if (reports.length === 0) {
+            pres.progress('done')
+            resolve()
+          } else {
+            reject('\n\n\n' + data)
+          }
         }
       })
       .on('error', err => {

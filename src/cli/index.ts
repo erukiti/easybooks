@@ -7,8 +7,10 @@ const cli = async (args: any) => {
   const pres: Presentation = {
     progress: state => console.log(state),
     info: message => console.log(message),
-    warn: msg => console.log(JSON.stringify(msg)),
-    error: msg => console.log(JSON.stringify(msg)),
+    warn: msg =>
+      console.log(`warn: ${msg.file}:${msg.line}: ${msg.message}`),
+    error: msg =>
+      console.log(`error: ${msg.file}:${msg.line}: ${msg.message}`),
   }
 
   try {
