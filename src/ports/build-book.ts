@@ -7,7 +7,7 @@ export interface ConfigReview {
 }
 
 export interface Catalog {
-  [props: string]: string[]
+  [props: string]: any[]
 }
 
 export type Config = ConfigReview & {
