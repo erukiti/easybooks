@@ -6,6 +6,8 @@ interface Context {
   list: number
   id: number
   chapter: string
+  index?: number
+  ordered?: boolean
 }
 
 const getId = (context: Context) => {
@@ -74,16 +76,31 @@ const linkReference = (tree: EBAST.LinkReference, context: Context) => {
 const list = (tree: EBAST.List, context: Context) => {
   return (
     tree.children
-      .map(child => compiler(child, { ...context, list: context.list + 1 }))
+      .map((child, index) => compiler(child, {
+        ...context,
+        list:    context.list + 1,
+        ordered: tree.ordered || false,
+        index:   index + 1
+      }))
       .join('') + '\n'
   )
 }
 
 const listItem = (tree: EBAST.ListItem, context: Context) => {
-  return ` ${'*'.repeat(context.list)} ${tree.children
+  const children = tree.children
     .map(child => compiler(child, context))
     .join('')
-    .trim()}\n`
+    .trim()
+    .split('\n')
+  const content = children.length > 1 ? children.slice(1).join('\n') : ''
+  if (/^\s*\/\//m.test(content)) {
+    const bullet = context.ordered ? `${context.index}.` : '*'
+    const tag = context.ordered ? 'ol' : 'ul'
+    return ` ${bullet} ${children[0]}\n//child[${tag}]\n${content}\n//child[/${tag}]\n`
+  } else {
+    const bullet = context.ordered ? `${context.index}.` : '*'.repeat(context.list)
+    return ` ${bullet} ${children.join('\n')}\n`
+  }
 }
 
 const ignore = (tree: any, context: Context) => ''
