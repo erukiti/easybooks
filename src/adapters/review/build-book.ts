@@ -1,7 +1,7 @@
 import childProcess from 'child_process'
 import path from 'path'
 
-import { ReportMessage, Presentation } from '../../ports/presentation'
+import { Presentation } from '../../ports/presentation'
 import {
   BuildBookPorts,
   BuildBookPortsFactory,
@@ -9,25 +9,7 @@ import {
 import { writeYaml, createCatalog, copyTemplates } from './tasks'
 import { preparingConfig } from './config'
 
-const reError = /^WARN: review-pdfmaker: (.*\.re):([0-9]+): error: (.+)$/
-
-export const parseReviewMessage = (s: string) => {
-  return s
-    .split('\n')
-    .map(line => {
-      const matched = reError.exec(line)
-      if (!matched) {
-        return null
-      } else {
-        return {
-          file: matched[1],
-          line: Number.parseInt(matched[2]),
-          message: matched[3],
-        }
-      }
-    })
-    .filter(v => v !== null) as ReportMessage[]
-}
+import { parseReviewMessage } from './parse-message'
 
 export const buildPdfByReview = (pres: Presentation, reviewDir: string) => {
   return new Promise<void>((resolve, reject) => {
