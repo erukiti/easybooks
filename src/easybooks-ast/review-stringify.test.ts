@@ -67,6 +67,12 @@ describe('code block', () => {
       await mdToReview('```js {id=hoge caption=ほげ}\nconst a = 1\n```\n'),
     ).toBe('//listnum[hoge][ほげ][js]{\nconst a = 1\n//}\n')
   })
+
+  test('option num', async () => {
+    expect(await mdToReview('```text {num=false}\n$ hoge\n```\n')).toBe(
+      '//list[-000][][text]{\n$ hoge\n//}\n',
+    )
+  })
 })
 
 describe('list', () => {

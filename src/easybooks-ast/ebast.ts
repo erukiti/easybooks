@@ -103,6 +103,7 @@ export interface Code extends Literal {
     startLine?: number
     endLine?: number
   }
+  num?: boolean
 }
 
 export interface YAML extends Literal {
