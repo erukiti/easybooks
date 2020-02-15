@@ -131,18 +131,18 @@ const comment = (tree: EBAST.Comment, context: Context) => {
 const image = (tree: EBAST.Image, context: Context) => {
   const matched = /^[^?]+\?(scale=[0-9.]+)$/.exec(tree.url)
 
-  console.log(tree.url)
   const url = path.basename(
     tree.url
       .replace(/\?(scale=[0-9.]+)$/, '')
       .replace(/\.[a-zA-Z0-9]+$/, ''),
   )
-  console.log(url)
 
   if (matched) {
-    return `//image[${url}][${tree.alt}][${matched[1]}]`
-  } else {
+    return `//image[${url}][${tree.alt || ''}][${matched[1]}]`
+  } else if (tree.alt) {
     return `//image[${url}][${tree.alt}]`
+  } else {
+    return `//image[${url}]`
   }
 }
 

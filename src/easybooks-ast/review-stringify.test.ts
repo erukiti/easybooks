@@ -135,13 +135,11 @@ describe('strong', () => {
 describe('image', () => {
   test('', () => {
     expect(mdToReview('![fuga](hoge.png)')).resolves.toBe(
-      '\n//image[hoge.png][fuga]\n\n',
+      '\n//image[hoge][fuga]\n',
     )
   })
   test('no alt', () => {
-    expect(mdToReview('![](piyo.png)')).resolves.toBe(
-      '\n//image[piyo.png]\n\n',
-    )
+    expect(mdToReview('![](piyo.png)')).resolves.toBe('\n//image[piyo]\n')
   })
 })
 
@@ -231,11 +229,9 @@ describe('image', () => {
     )
   })
 
-
   test('with scale', () => {
     expect(mdToReview('![ほげ](images/hoge.png?scale=0.5)')).resolves.toBe(
       '\n//image[hoge][ほげ][scale=0.5]\n',
     )
   })
-
 })
