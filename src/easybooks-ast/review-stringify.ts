@@ -1,4 +1,5 @@
 import * as EBAST from './ebast'
+import { parseMeta } from './md-to-eb'
 
 interface Context {
   list: number
@@ -144,19 +145,24 @@ const TableAlignWithWidth = {
   right: 'b',
 }
 
+interface TableColumnParams {
+  width?: string
+}
+
 const table = (tree: EBAST.Table, context: Context) => {
-  const colWidthes: string[] = []
+  const colParams: TableColumnParams[] = []
   const [header, ...rows] = tree.children.map((child, index) => {
     let row = compiler(child, context)
     if (index == 0) {
       row = row.split('\t').map(column => {
-        const matcher = /^(\s*)@([0-9]+):\s*/
-        const colWidthMatched = column.match(matcher)
-        if (colWidthMatched) {
+        const matcher = /^(\s*)(\{.*?\})\s*/
+        const matched = column.match(matcher)
+        if (matched) {
           const content = column.replace(matcher, '$1')
-          colWidthes.push(colWidthMatched[2])
+          colParams.push(parseMeta(matched[2]))
           return content
         } else {
+          colParams.push({})
           return column
         }
       }).join('\t')
@@ -170,17 +176,22 @@ const table = (tree: EBAST.Table, context: Context) => {
     lines.push(
       `//tsize[|latex||${tree.align
         .map((align, index) => {
-          const width = colWidthes[index]
-          if (width) {
-            return `${TableAlignWithWidth[align || 'left']}{${width}mm}`
+          const params = colParams[index]
+          if (params && params.width) {
+            return `${TableAlignWithWidth[align || 'left']}{${params.width}mm}`
           } else {
             return TableAlign[align || 'left']
           }
         })
         .join('|')}|]`,
     )
-  } else if (colWidthes.length > 0) {
-    lines.push(`//tsize[${colWidthes.join(',')}]`)
+  } else {
+    let size: string = ''
+    const colWidth = colParams.map(params => params.width || '')
+    if (colWidth.every(width => /^[0-9]+$/.test(width))) {
+      size = colWidth.join(',')
+    }
+    lines.push(`//tsize[${size}]`)
   }
 
   // FIXME: caption!!!!

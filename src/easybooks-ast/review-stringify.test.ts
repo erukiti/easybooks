@@ -173,7 +173,7 @@ describe('table', () => {
     expect(
       mdToReview(
         [
-          '|@20:title1|@30:title2|@50:title3|',
+          '|{width=20}title1|{width=30}title2|{width=50}title3|',
           '|-----|-----|----|',
           '|hoge|fuga|piyo|',
           '',
