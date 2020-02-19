@@ -8,6 +8,7 @@ import katex from 'remark-html-katex'
 import html from 'remark-html'
 import frontmatter from 'remark-frontmatter'
 import stringify from 'remark-stringify'
+import ruby from 'remark-ruby'
 
 import * as EBAST from './ebast'
 import mdToEb from './md-to-eb'
@@ -23,6 +24,7 @@ export const markdown = unified()
   .use(hljs)
   .use(frontmatter, ['yaml'])
   .use(stringify)
+  .use(ruby)
 
 const toEb = unified().use(mdToEb)
 

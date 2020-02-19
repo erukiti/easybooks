@@ -142,6 +142,12 @@ export interface InlineCode extends Literal {
   type: 'inlineCode'
 }
 
+export interface Ruby extends Literal {
+  type: 'ruby'
+  base: string
+  text: string
+}
+
 export interface Break extends Unist.Node {
   type: 'break'
 }
@@ -228,6 +234,7 @@ export type StaticPhrasingContent =
   | Delete
   | HTML
   | InlineCode
+  | Ruby
   | Break
   | Image
   | ImageReference
