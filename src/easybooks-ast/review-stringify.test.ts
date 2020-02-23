@@ -259,3 +259,11 @@ describe('image', () => {
     )
   })
 })
+
+describe('ruby', () => {
+  test('ruby', () => {
+    expect(mdToReview('ほげ{府賀}^(ふが)ぴよ')).resolves.toBe(
+      '\nほげ@<ruby>{府賀, ふが}ぴよ\n',
+    )
+  })
+})
