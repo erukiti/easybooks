@@ -62,6 +62,16 @@ const code = (tree: EBAST.Code, context: Context) => {
 
 const link = (tree: EBAST.Link, context: Context) => {
   const s = tree.children.map(child => compiler(child, context)).join('')
+  if (/^[^\/]+\.(md|re)$/i.test(tree.url)) {
+	const chapterId = tree.url.replace(/\.(md|re)$/, '')
+    if (/^第?[0-9a-z?* ]+章$/i.test(s)) {
+      return `@<chap>{${chapterId}}`
+    }
+    else if (/^第?[0-9a-z?* ]+章/i.test(s)) {
+      return `@<chapref>{${chapterId}}`
+    }
+    return `@<title>{${chapterId}}`
+  }
   return `@<href>{${tree.url}${s ? `, ${s}` : ''}}`
 }
 

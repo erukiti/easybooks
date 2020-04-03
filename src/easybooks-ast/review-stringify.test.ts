@@ -39,6 +39,53 @@ describe('paragraph', () => {
   })
 })
 
+describe('chapter reference', () => {
+  test('chapter number', async () => {
+    const links = [
+      '[1章](first.md)',
+      '[第2章](second.md)',
+      '[第X章](third.md)',
+      '[1 章](first.re)',
+      '[第 2 章](second.re)',
+      '[第 X 章](third.re)',
+    ]
+    expect(await mdToReview(links.join(','))).toBe(
+      '\n@<chap>{first},@<chap>{second},@<chap>{third},' +
+        '@<chap>{first},@<chap>{second},@<chap>{third}\n',
+    )
+  })
+
+  test('chapter title', async () => {
+    const links = [
+      '[最初](first.md)',
+      '[次](second.md)',
+      '[今度](third.md)',
+      '[任意の](first.re)',
+      '[文字列](second.re)',
+      '[](third.re)',
+    ]
+    expect(await mdToReview(links.join(','))).toBe(
+      '\n@<title>{first},@<title>{second},@<title>{third},' +
+        '@<title>{first},@<title>{second},@<title>{third}\n',
+    )
+  })
+
+  test('chapter number and title', async () => {
+    const links = [
+      '[第1章 最初](first.md)',
+      '[2章 次](second.md)',
+      '[第N章 今度](third.md)',
+      '[第*章 任意の](first.re)',
+      '[第?章 文字列](second.re)',
+      '[第n章 タイトル](third.re)',
+    ]
+    expect(await mdToReview(links.join(','))).toBe(
+      '\n@<chapref>{first},@<chapref>{second},@<chapref>{third},' +
+        '@<chapref>{first},@<chapref>{second},@<chapref>{third}\n',
+    )
+  })
+})
+
 describe('code block', () => {
   test('no lang', async () => {
     expect(await mdToReview('```\nほげ\n```\n')).toBe(
