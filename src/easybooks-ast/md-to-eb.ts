@@ -63,7 +63,7 @@ const enterHeading = (node: MDAST.Heading & EBAST.Heading) => {
   node.children = children
 }
 
-const reDiv = /^<div\s+class(?:Name)?="([^"]+)">(.+)<\/div>$/
+const reDiv = /^<div\s+class(?:Name)?="([^"]+)">(.*)<\/div>$/
 
 const enterHtml = (node: MDAST.HTML & EBAST.Comment) => {
   const html = node.value.trim()

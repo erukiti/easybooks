@@ -81,23 +81,29 @@ describe('list', () => {
     expect(await mdToReview('* hoge\n  - fuga')).toBe(
       ' * hoge\n ** fuga\n\n',
     )
-    expect(await mdToReview('* hoge\n  \n  ```\n  list\n  ```\n* fuga')).toBe(
-      ' * hoge\n//child[ul]\n//listnum[-000][]{\nlist\n//}\n//child[/ul]\n * fuga\n\n'
+    expect(
+      await mdToReview('* hoge\n  \n  ```\n  list\n  ```\n* fuga'),
+    ).toBe(
+      ' * hoge\n//child[ul]\n//listnum[-000][]{\nlist\n//}\n//child[/ul]\n * fuga\n\n',
     )
     expect(await mdToReview('* hoge\n  ![image]()\n* fuga')).toBe(
-      ' * hoge\n//child[ul]\n//image[][image]\n//child[/ul]\n * fuga\n\n'
+      ' * hoge\n//child[ul]\n//image[][image]\n//child[/ul]\n * fuga\n\n',
     )
   })
 })
 
 describe('ordered list', () => {
   test('', async () => {
-    expect(await mdToReview('1. hoge\n2. fuga')).toBe(' 1. hoge\n 2. fuga\n\n')
-    expect(await mdToReview('1. hoge\n  \n  ```\n  list\n  ```\n2. fuga')).toBe(
-      ' 1. hoge\n//child[ol]\n//listnum[-000][]{\nlist\n//}\n//child[/ol]\n 2. fuga\n\n'
+    expect(await mdToReview('1. hoge\n2. fuga')).toBe(
+      ' 1. hoge\n 2. fuga\n\n',
+    )
+    expect(
+      await mdToReview('1. hoge\n  \n  ```\n  list\n  ```\n2. fuga'),
+    ).toBe(
+      ' 1. hoge\n//child[ol]\n//listnum[-000][]{\nlist\n//}\n//child[/ol]\n 2. fuga\n\n',
     )
     expect(await mdToReview('1. hoge\n  ![image]()\n1. fuga')).toBe(
-      ' 1. hoge\n//child[ol]\n//image[][image]\n//child[/ol]\n 2. fuga\n\n'
+      ' 1. hoge\n//child[ol]\n//image[][image]\n//child[/ol]\n 2. fuga\n\n',
     )
   })
 })
@@ -230,6 +236,12 @@ describe('div', () => {
   test('div className => re:view block', () => {
     expect(mdToReview('<div class="flushright">ほげ</div>')).resolves.toBe(
       ['//flushright{', 'ほげ', '//}', ''].join('\n'),
+    )
+  })
+
+  test('div pagebreak', () => {
+    expect(mdToReview('<div class="pagebreak"></div>')).resolves.toBe(
+      '//pagebreak\n',
     )
   })
 })

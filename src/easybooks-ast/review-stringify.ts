@@ -80,12 +80,14 @@ const linkReference = (tree: EBAST.LinkReference, context: Context) => {
 const list = (tree: EBAST.List, context: Context) => {
   return (
     tree.children
-      .map((child, index) => compiler(child, {
-        ...context,
-        list:    context.list + 1,
-        ordered: tree.ordered || false,
-        index:   index + 1
-      }))
+      .map((child, index) =>
+        compiler(child, {
+          ...context,
+          list: context.list + 1,
+          ordered: tree.ordered || false,
+          index: index + 1,
+        }),
+      )
       .join('') + '\n'
   )
 }
@@ -102,7 +104,9 @@ const listItem = (tree: EBAST.ListItem, context: Context) => {
     const tag = context.ordered ? 'ol' : 'ul'
     return ` ${bullet} ${children[0]}\n//child[${tag}]\n${content}\n//child[/${tag}]\n`
   } else {
-    const bullet = context.ordered ? `${context.index}.` : '*'.repeat(context.list)
+    const bullet = context.ordered
+      ? `${context.index}.`
+      : '*'.repeat(context.list)
     return ` ${bullet} ${children.join('\n')}\n`
   }
 }
@@ -209,7 +213,11 @@ const tableCell = (tree: EBAST.TableCell, context: Context) => {
 }
 
 const div = (tree: EBAST.Div, context: Context) => {
-  return `//${tree.className}{\n${tree.value}\n//}\n`
+  if (tree.value) {
+    return `//${tree.className}{\n${tree.value}\n//}\n`
+  } else {
+    return `//${tree.className}\n`
+  }
 }
 
 const compilers = {
