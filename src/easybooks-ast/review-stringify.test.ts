@@ -83,7 +83,7 @@ describe('code block', () => {
   test('file name with bracket', async () => {
     expect(
       await mdToReview('```js {filename=src/[id]/hoge.js}\nconst a = 1\n```\n'),
-    ).toBe('//listnum[-000][src/\\[id\\]/hoge.js][js]{\nconst a = 1\n//}\n')
+    ).toBe('//listnum[-000][src/[id\\]/hoge.js][js]{\nconst a = 1\n//}\n')
   })
 })
 

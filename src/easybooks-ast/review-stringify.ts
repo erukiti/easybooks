@@ -53,7 +53,8 @@ const breakNode = () => {
 
 // FIXME 全オプションに対応する、適切な場所に移動する
 const escapeOption = (opt: string) => {
-  return opt.replace(/([\[\]])/g, '\\$1')
+  // FIXME: エスケープしないといけないのって、] だけ？なら、もっとダイレクトな書き方に書き換える
+  return opt.replace(/([\]])/g, '\\$1')
 }
 
 const code = (tree: EBAST.Code, context: Context) => {
