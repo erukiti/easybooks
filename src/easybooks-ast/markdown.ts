@@ -5,10 +5,11 @@ import math from 'remark-math'
 import hljs from 'remark-highlight.js'
 import breaks from 'remark-breaks'
 import katex from 'remark-html-katex'
-import html from 'remark-html'
+// import html from 'remark-html'
 import frontmatter from 'remark-frontmatter'
 import stringify from 'remark-stringify'
 import ruby from 'remark-ruby'
+import footnotes from 'remark-footnotes'
 
 import * as EBAST from './ebast'
 import mdToEb from './md-to-eb'
@@ -16,8 +17,9 @@ import importPlugin from './import-source'
 import { ImporterPort } from '../ports/importer'
 
 export const markdown = unified()
-  .data('settings', { footnotes: true, gfm: true })
+  .data('settings', { gfm: true })
   .use(parse)
+  .use(footnotes)
   .use(breaks)
   .use(math)
   .use(katex)

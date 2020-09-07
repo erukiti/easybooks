@@ -72,10 +72,12 @@ const link = (tree: EBAST.Link, context: Context) => {
 
 const linkReference = (tree: EBAST.LinkReference, context: Context) => {
   const [tag, id] = (tree.identifier as string).split(':')
-  if (tag !== '' && id !== '') {
+  if (tag && id) {
     return `@<${tag}>{${id.replace('}', '\\}')}}`
   }
-  throw new Error('linkRef: [tag:id] format is only supported.')
+  throw new Error(
+    `linkRef: [tag:id] format is only supported. ${tree.identifier}`,
+  )
 }
 
 const list = (tree: EBAST.List, context: Context) => {

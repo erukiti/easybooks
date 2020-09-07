@@ -137,18 +137,18 @@ describe('link reference [list:ID] format', () => {
 })
 
 describe('footnote reference', () => {
-  test('', () => {
-    expect(mdToReview('fuga[^hoge]piyo')).resolves.toBe(
+  test('', async () => {
+    expect(await mdToReview('fuga[^hoge]piyo')).toBe(
       '\nfuga@<fn>{hoge}piyo\n',
     )
   })
 })
 
 describe('footnote definition', () => {
-  test('', () => {
-    expect(
-      mdToReview('[^hoge]: hoge とは「ほげ」である。\n'),
-    ).resolves.toBe('//footnote[hoge][hoge とは「ほげ」である。]\n')
+  test('', async () => {
+    expect(await mdToReview('[^hoge]: hoge とは「ほげ」である。\n')).toBe(
+      '//footnote[hoge][hoge とは「ほげ」である。]\n',
+    )
   })
 })
 
