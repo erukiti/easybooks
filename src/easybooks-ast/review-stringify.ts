@@ -51,6 +51,11 @@ const breakNode = () => {
   return `\n`
 }
 
+// FIXME 全オプションに対応する、適切な場所に移動する
+const escapeOption = (opt: string) => {
+  return opt.replace(/([\[\]])/g, '\\$1')
+}
+
 const code = (tree: EBAST.Code, context: Context) => {
   if (tree.lang === 'sh') {
     return `//cmd{\n${tree.value}\n//}\n`
@@ -58,7 +63,7 @@ const code = (tree: EBAST.Code, context: Context) => {
 
   const command = tree.num ? 'listnum' : 'list'
   const id = (tree.id || getId(context)).replace('}', '\\}')
-  const caption = tree.caption || tree.filename || ''
+  const caption = escapeOption(tree.caption || tree.filename || '')
   const lang = tree.lang ? `[${tree.lang}]` : ''
 
   const header = `//${command}[${id}][${caption}]${lang}{`
