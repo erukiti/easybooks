@@ -13,6 +13,7 @@ export const readConfig = async (
 
 export const preparingConfig = (config: Config) => {
   const { catalog, templates = [], sty_templates } = config
+
   delete config.catalog
   delete config.templates
   delete config.sty_templates

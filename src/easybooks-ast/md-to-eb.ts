@@ -5,6 +5,10 @@ import { traverse } from './utils'
 
 const reKeyValue = /^(([a-zA-Z0-9]+)(?:=([^" ]+)|="([^"]+)")?)/
 
+/**
+ * FIXME: node: MDAST.Code & EBAST.Code のような型定義を修正する
+ */
+
 const parseKeyValue = (meta: string): { [props: string]: string } => {
   const results: { [props: string]: any } = {}
   let matched
@@ -65,7 +69,7 @@ const enterHeading = (node: MDAST.Heading & EBAST.Heading) => {
 
 const reDiv = /^<div\s+class(?:Name)?="([^"]+)">(.*)<\/div>$/
 
-const enterHtml = (node: MDAST.HTML & EBAST.Comment) => {
+const enterHtml = (node: MDAST.HTML) => {
   const html = node.value.trim()
   if (html.startsWith('<!--')) {
     const value = node.value
@@ -73,7 +77,7 @@ const enterHtml = (node: MDAST.HTML & EBAST.Comment) => {
       .replace(/^<!--/, '')
       .replace(/-->$/, '')
       .trim()
-    ;(node as EBAST.Comment).type = 'comment'
+    ;((node as any) as EBAST.Comment).type = 'comment'
     node.value = value
     return
   }

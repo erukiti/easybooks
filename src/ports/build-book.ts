@@ -11,7 +11,7 @@ export interface Catalog {
 }
 
 export type Config = ConfigReview & {
-  catalog: Catalog
+  catalog?: Catalog
   templates?: string[]
   sty_templates?: {
     url: string

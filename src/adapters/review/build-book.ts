@@ -71,7 +71,7 @@ export const createBuildBookByReviewPort: BuildBookPortsFactory = ({
       )
     }
 
-    const { tasks } = createCatalog(files, catalog)
+    const { tasks } = createCatalog(files, catalog!)
 
     await Promise.all([
       writeYaml(files, 'catalog.yml', catalog),

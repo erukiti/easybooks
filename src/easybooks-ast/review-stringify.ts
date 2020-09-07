@@ -58,7 +58,7 @@ const code = (tree: EBAST.Code, context: Context) => {
 
   const command = tree.num ? 'listnum' : 'list'
   const id = (tree.id || getId(context)).replace('}', '\\}')
-  const caption = tree.caption ?? tree.filename ?? ''
+  const caption = tree.caption || tree.filename || ''
   const lang = tree.lang ? `[${tree.lang}]` : ''
 
   const header = `//${command}[${id}][${caption}]${lang}{`
