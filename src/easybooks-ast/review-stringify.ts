@@ -52,16 +52,17 @@ const breakNode = () => {
 }
 
 const code = (tree: EBAST.Code, context: Context) => {
-  const lang = tree.lang ? `[${tree.lang}]` : ''
   if (tree.lang === 'sh') {
     return `//cmd{\n${tree.value}\n//}\n`
   }
 
-  const num = tree.num ? 'num' : ''
-  return `//list${num}[${(tree.id || getId(context)).replace(
-    '}',
-    '\\}',
-  )}][${tree.caption || ''}]${lang}{\n${tree.value}\n//}\n`
+  const command = tree.num ? 'listnum' : 'list'
+  const id = (tree.id || getId(context)).replace('}', '\\}')
+  const caption = tree.caption ?? tree.filename ?? ''
+  const lang = tree.lang ? `[${tree.lang}]` : ''
+
+  const header = `//${command}[${id}][${caption}]${lang}{`
+  return [header, tree.value, '//}\n'].join('\n')
 }
 
 const link = (tree: EBAST.Link, context: Context) => {

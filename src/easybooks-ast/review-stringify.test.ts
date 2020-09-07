@@ -73,6 +73,12 @@ describe('code block', () => {
       '//list[-000][][text]{\n$ hoge\n//}\n',
     )
   })
+
+  test('file name', async () => {
+    expect(
+      await mdToReview('```js {filename=src/hoge.js}\nconst a = 1\n```\n'),
+    ).toBe('//listnum[-000][src/hoge.js][js]{\nconst a = 1\n//}\n')
+  })
 })
 
 describe('list', () => {
