@@ -1,6 +1,7 @@
 import path from 'path'
 
 import * as EBAST from './ebast'
+import { parseMeta } from './md-to-eb'
 
 interface Context {
   list: number
@@ -186,20 +187,59 @@ const TableAlign = {
   center: 'c',
   right: 'r',
 }
+const TableAlignWithWidth = {
+  left: 'p',
+  center: 'm',
+  right: 'b',
+}
+
+interface TableColumnParams {
+  width?: string
+}
 
 const table = (tree: EBAST.Table, context: Context) => {
-  const [header, ...rows] = tree.children.map(child =>
-    compiler(child, context),
-  )
+  const colParams: TableColumnParams[] = []
+  const [header, ...rows] = tree.children.map((child, index) => {
+    let row = compiler(child, context)
+    if (index == 0) {
+      row = row.split('\t').map(column => {
+        const matcher = /^(\s*)(\{.*?\})\s*/
+        const matched = column.match(matcher)
+        if (matched) {
+          const content = column.replace(matcher, '$1')
+          colParams.push(parseMeta(matched[2]))
+          return content
+        } else {
+          colParams.push({})
+          return column
+        }
+      }).join('\t')
+    }
+    return row
+  })
 
   const lines: string[] = []
 
   if (tree.align) {
     lines.push(
       `//tsize[|latex||${tree.align
-        .map(align => TableAlign[align || 'left'])
+        .map((align, index) => {
+          const params = colParams[index]
+          if (params && params.width) {
+            return `${TableAlignWithWidth[align || 'left']}{${params.width}mm}`
+          } else {
+            return TableAlign[align || 'left']
+          }
+        })
         .join('|')}|]`,
     )
+  } else {
+    let size: string = ''
+    const colWidth = colParams.map(params => params.width || '')
+    if (colWidth.every(width => /^[0-9]+$/.test(width))) {
+      size = colWidth.join(',')
+    }
+    lines.push(`//tsize[${size}]`)
   }
 
   // FIXME: caption!!!!

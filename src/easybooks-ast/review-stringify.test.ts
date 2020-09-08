@@ -209,6 +209,29 @@ describe('table', () => {
     )
   })
 
+  test('GFM table with column width', () => {
+    expect(
+      mdToReview(
+        [
+          '|{width=20}title1|{width=30}title2|{width=50}title3|',
+          '|-----|-----|----|',
+          '|hoge|fuga|piyo|',
+          '',
+        ].join('\n'),
+      ),
+    ).resolves.toBe(
+      [
+        '//tsize[|latex||p{20mm}|p{30mm}|p{50mm}|]',
+        '//table[-000][]{',
+        'title1\ttitle2\ttitle3',
+        '--------------------------',
+        'hoge\tfuga\tpiyo',
+        '//}',
+        '',
+      ].join('\n'),
+    )
+  })
+
   test('GFM table left/center/right align', () => {
     expect(
       mdToReview(
