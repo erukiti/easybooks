@@ -59,6 +59,9 @@ export const createCatalog = (
             const reviewFilename = key.replace(/\.md$/, '.re')
             tasks.push(convert(files, key, reviewFilename))
             namedEntry[reviewFilename] = filename[key].map(processEntry)
+          } else if (key.endsWith('.re')) {
+            tasks.push(files.exportFileToDisk(key))
+            namedEntry[key] = filename[key].map(processEntry)
           } else {
             namedEntry[key] = filename[key].map(processEntry)
           }
@@ -69,10 +72,7 @@ export const createCatalog = (
         tasks.push(convert(files, filename, reviewFilename))
         return reviewFilename
       } else {
-        const copy = async () => {
-          await files.exportFileToDisk(filename)
-        }
-        tasks.push(copy())
+        tasks.push(files.exportFileToDisk(filename))
         return filename
       }
     }
